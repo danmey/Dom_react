@@ -17,7 +17,7 @@ SERVER_FILES := ${wildcard *.eliom}
 
 ## Source files for the client part
 
-CLIENT_FILES :=  react_dom.ml orbit.ml
+CLIENT_FILES :=  react_dom.ml orbit.ml ${wildcard *.eliom}
 
 ## Needed binaries
 

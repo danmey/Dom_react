@@ -222,75 +222,118 @@ let picture_list_service =
 let main_service =
   My_appl.register_service ~path:[""] ~get_params:Eliom_parameters.unit
     (fun () () ->
-       Eliom_services.onload
-         {{
-           (* let canvas = Dom_html.createCanvas Dom_html.document in *)
-           (* let ctx = canvas##getContext (Dom_html._2d_) in *)
-           (* canvas##width <- width; canvas##height <- height; *)
-           (* ctx##lineCap <- Js.string "round"; *)
+       (* Eliom_services.onload *)
+       (*   {{ *)
+       (*     (\* let canvas = Dom_html.createCanvas Dom_html.document in *\) *)
+       (*     (\* let ctx = canvas##getContext (Dom_html._2d_) in *\) *)
+       (*     (\* canvas##width <- width; canvas##height <- height; *\) *)
+       (*     (\* ctx##lineCap <- Js.string "round"; *\) *)
 
-           (* Dom.appendChild Dom_html.document##body canvas; *)
+       (*     (\* Dom.appendChild Dom_html.document##body canvas; *\) *)
 
-           (* (\* The initial image: *\) *)
-           (* let img = Dom_html.createImg Dom_html.document in *)
-           (* img##alt <- Js.string "canvas"; *)
-           (* img##src <- Js.string (Eliom_output.Html5.make_string_uri ~service:%picture_list_service ()); *)
-           (* img##onload <- Dom_html.handler (fun ev -> ctx##drawImage(img, 0., 0.); Js._false); *)
+       (*     (\* (\\* The initial image: *\\) *\) *)
+       (*     (\* let img = Dom_html.createImg Dom_html.document in *\) *)
+       (*     (\* img##alt <- Js.string "canvas"; *\) *)
+       (*     (\* img##src <- Js.string (Eliom_output.Html5.make_string_uri ~service:%picture_list_service ()); *\) *)
+       (*     (\* img##onload <- Dom_html.handler (fun ev -> ctx##drawImage(img, 0., 0.); Js._false); *\) *)
 
-           (* let x = ref 0 and y = ref 0 in *)
-           (* let set_coord ev = *)
-           (*   let x0, y0 = Dom_html.elementClientPosition canvas in *)
-           (*   x := ev##clientX - x0; y := ev##clientY - y0 in *)
-           (* let compute_line ev = *)
-           (*   let oldx = !x and oldy = !y in *)
-           (*   set_coord ev; *)
-           (*   ("#ff9933", 5, (oldx, oldy), (!x, !y)) *)
-           (* in *)
-           (* let (bus:messages Eliom_bus.t) = %bus in *)
-           (* let line ev = *)
-           (*   let v = compute_line ev in *)
-           (*   (\* let _ = Eliom_bus.write bus v in *\) *)
-           (*   draw ctx v *)
+       (*     (\* let x = ref 0 and y = ref 0 in *\) *)
+       (*     (\* let set_coord ev = *\) *)
+       (*     (\*   let x0, y0 = Dom_html.elementClientPosition canvas in *\) *)
+       (*     (\*   x := ev##clientX - x0; y := ev##clientY - y0 in *\) *)
+       (*     (\* let compute_line ev = *\) *)
+       (*     (\*   let oldx = !x and oldy = !y in *\) *)
+       (*     (\*   set_coord ev; *\) *)
+       (*     (\*   ("#ff9933", 5, (oldx, oldy), (!x, !y)) *\) *)
+       (*     (\* in *\) *)
+       (*     (\* let (bus:messages Eliom_bus.t) = %bus in *\) *)
+       (*     (\* let line ev = *\) *)
+       (*     (\*   let v = compute_line ev in *\) *)
+       (*     (\*   (\\* let _ = Eliom_bus.write bus v in *\\) *\) *)
+       (*     (\*   draw ctx v *\) *)
 
-           (* in *)
-           (* let imgs = Dom_html.document ## getElementsByTagName (Js.string "img") in *)
-           (* (Js.Optdef.iter (imgs ## item (0)) (fun f -> Dom_html.window ## alert (f ## tagName))); *)
-           let _ = Dom_html.window ## alert (Js.string "nice") in
-           ()
-            (* let _ = Lwt_stream.iter (draw ctx) (Eliom_bus.stream bus) in *)
-           (* ignore (run (mousedowns canvas *)
-           (*                (arr (fun ev -> set_coord ev; line ev) *)
-           (*                 >>> first [mousemoves Dom_html.document (arr line); *)
-           (*                            mouseup Dom_html.document >>> (arr line)])) ()); *)
-         }};
-      Lwt.return
-        (List.map
-           (fun dirname ->
-             (div [div [h1 [pcdata dirname]];
-                   div (Gallery.thumbnails "2011")]))
-           (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db")))
+       (*     (\* in *\) *)
+       (*     (\* let imgs = Dom_html.document ## getElementsByTagName (Js.string "img") in *\) *)
+       (*     (\* (Js.Optdef.iter (imgs ## item (0)) (fun f -> Dom_html.window ## alert (f ## tagName))); *\) *)
+       (*     let _ = Dom_html.window ## alert (Js.string "nice") in *)
+       (*     () *)
+       (*      (\* let _ = Lwt_stream.iter (draw ctx) (Eliom_bus.stream bus) in *\) *)
+       (*     (\* ignore (run (mousedowns canvas *\) *)
+       (*     (\*                (arr (fun ev -> set_coord ev; line ev) *\) *)
+       (*     (\*                 >>> first [mousemoves Dom_html.document (arr line); *\) *)
+       (*     (\*                            mouseup Dom_html.document >>> (arr line)])) ()); *\) *)
+       (*   }}; *)
+      Lwt.return [])
+(* []p [pcdata "Reactive programming"]]) *)
+        (* (List.map *)
+        (*    (fun dirname -> *)
+        (*      (div [div [h1 [pcdata dirname]]; *)
+        (*            div (Gallery.thumbnails "2011")])) *)
+        (*    (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db"))) *)
 {client{
   open Lwt_react
-  let _ =
-    let signal, stop = React_dom.ticks 0.1 in
-    let pr_x = S.map 
-      (fun x ->
-        Dom_html.window ## alert (Js.string (string_of_float x));
-        stop ()
-      ) signal in
+  (* let _ = *)
+  (*   let signal, stop = React_dom.ticks 0.1 in *)
+  (*   let pr_x = S.map  *)
+  (*     (fun x -> *)
+  (*       Dom_html.window ## alert (Js.string (string_of_float x)); *)
+  (*       stop () *)
+  (*     ) signal in *)
 
-    Dom_html.window ## onload <- Dom_html.handler (fun _ ->
-      let imgs = Dom_html.document ## images in
-      for i = 0 to (imgs ## length) - 1 do
-        let image = imgs ## item (i) in
-        (Js.Optdef.iter image) (fun img -> 
-          img ## onclick <- Dom_html.handler 
-            (fun _ -> 
-              let src = img ## src in
-              let src = src ## replace_string ((Js.string "/thumbnails"), (Js.string "")) in
-              img ## src <- src;
-              Js._true))
-      done;
-      Js._true)
+  (*   Dom_html.window ## onload <- Dom_html.handler (fun _ -> *)
+  (*     let imgs = Dom_html.document ## images in *)
+  (*     for i = 0 to (imgs ## length) - 1 do *)
+  (*       let image = imgs ## item (i) in *)
+  (*       (Js.Optdef.iter image) (fun img ->  *)
+  (*         img ## onclick <- Dom_html.handler  *)
+  (*           (fun _ ->  *)
+  (*             let src = img ## src in *)
+  (*             let src = src ## replace_string ((Js.string "/thumbnails"), (Js.string "")) in *)
+  (*             img ## src <- src; *)
+  (*             Js._true)) *)
+  (*     done; *)
+  (*     Js._true) *)
+(* let onload _ = *)
+(*   let (>>=) = Js.Opt.bind in *)
+(*   let canvas = Dom_html.createCanvas Dom_html.document in *)
+(*   canvas ## setAttribute ((Js.string "style"), (Js.string "border-style:solid")); *)
+(*   Dom.appendChild Dom_html.document ## body canvas; *)
+(*   let ctx = canvas##getContext (Dom_html._2d_) in *)
+(*   canvas##width <- width; canvas##height <- height; *)
 
+  (* (get "canvas") >>= *)
+  (*   (fun canvas -> *)
+
+  (*     let canvas = ((Js.Unsafe.coerce canvas) : Dom_html.canvasElement Js.t) in *)
+  (*     let ctx = canvas##getContext (Dom_html._2d_) in *)
+  (*     ctx ## fillRect (10., 10., 20., 20.); *)
+  (*     Js.Opt.return ()); *)
+      (* Js.Opt.return ctx) >>= (fun canvas -> *)
+      (*   int_value "balls" >>= (fun balls -> *)
+      (*     int_value "red" >>= (fun red -> *)
+      (*       int_value "blue" >>= (fun blue -> *)
+      (*         int_value "radius" >>= (fun radius -> *)
+      (*           float_value "speed" >>= (fun speed -> *)
+      (*             let mouse = React_dom.mouse () in *)
+      (*             let ticks,_ = React_dom.ticks 0.05 in *)
+      (*             let phase = *)
+      (*               S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed in *)
+      (*             let shapes = *)
+      (*               S.l6 (fun balls radius red blue (mx, my) phase -> *)
+      (*                 build_list balls (fun i -> *)
+      (*                   let t = 2. *. 3.1415 *. float_of_int i /. float_of_int balls +. phase in *)
+      (*                   let left, top = *)
+      (*                     (float_of_int mx +. cos t *. radius, *)
+      (*                      float_of_int my +. sin t *. radius) in *)
+      (*                   let right, bottom = left +. 10., top +. 10.  *)
+      (*                   in *)
+      (*                   canvas ## fillRect (left, top, right, bottom))) *)
+      (*             in *)
+      (*             Js.Opt.return ())))))); *)
+  (* Js._false *)
+
+let _ = Dom_html.window ## onload <- Dom_html.handler Orbit.onload
+(* let _ = *)
+(*   let canvas = Dom_html.createCanvas Dom_html.document in *)
+(*   Dom.appendChild Dom_html.document##body canvas *)
 }}

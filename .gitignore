@@ -5,3 +5,8 @@
 *.MPG
 *.THM
 *.png
+/.depend
+/_client/gallery
+/_server/gallery.o
+/gallery.a
+/react-dom.ml
