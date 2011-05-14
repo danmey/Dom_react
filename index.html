@@ -1,15 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-	  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <title>Chess</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script type="text/javascript" src="gallery.js"></script>
+    <title>Orbit Mouse</title>
   </head>
   <body>
-    <div id="board"></div>
-    <div id="control"></div>
+    <canvas id="canvas" width="300" height="300" style="border-style:solid"></canvas>
+    <table>
+      <tr>
+        <td>Radius</td>
+        <td><input type="text" id="radius" value="100"></td>
+      </tr>
+      <tr>
+        <td>Speed</td>
+        <td><input type="text" id="speed" value="6"></td>
+      </tr>
+      <tr>
+        <td># Balls</td>
+        <td><input type="text" id="balls" value="3"></td>
+      </tr>
+      <tr>
+        <td>Red</td>
+        <td><input type="text" id="red" value="0"></td>
+      </tr>
+      <tr>
+        <td>Green</td>
+        <td><input type="text" id="green" value="0"></td>
+      </tr>
+      <tr>
+        <td>Blue</td>
+        <td><input type="text" id="blue" value="0"></td>
+      </tr>
+    </table>
+    <script src="gallery.js"></script>
   </body>
 </html>
-
