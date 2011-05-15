@@ -47,11 +47,11 @@ let onload ev =
                  let d = div
                    ~id:"themouse"
                    ~color:"#FFFFFF"
-                   ~backgroundColor:"#ff0000"
+                   ~backgroundColor:"#000000"
                    ~position:"absolute"
                    ~left:(string_of_int x)
                    ~top:(string_of_int y)
-                   ~padding:"10px" [ (* Html.createTextinput ~name:(js "the mouse!") Html.document *)] 
+                   ~padding:"10px" [ Html.document ## createTextNode (js"the mouse!") ] 
                  in
                 (gen(), (d :> Dom.node Js.t)))  mouse));
 
@@ -64,26 +64,22 @@ let onload ev =
                  let d = div
                    ~id:"tail"
                    ~color:"#FF0000"
-                   ~backgroundColor:"#ff0000"
+                   ~backgroundColor:"#000000"
                    ~position:"absolute"
                    ~left:(string_of_int x)
                    ~top:(string_of_int y)
-                   ~padding:"10px" [ (* Html.createTextarea ~name:(js "the mouse!") Html.document *)] 
+                   ~padding:"10px" [ Html.document ## createTextNode (js"its tail!") ] 
                  in
                 (gen(), (d :> Dom.node Js.t))) tail_pos);
 
            let wag_delay = delay *. 1.5 in
            Html.document ## getElementById (js"tail") >>= fun tail ->
            let mouseandtail_offset = mouse_offset + tail ## offsetWidth in
-           (* let wag_offset = F.hold 0 (F.collect (fun _ _ -> (Random.int 10) - 5) 0 (Fd.ticks 100.)) in *)
            let ticks, _ = Rd.ticks 100. in
-           let wag_offset = R.S.map (fun _ -> Random.int 10 - 5) ticks
-           in
-           let wag_pos =
-             R.S.l2
-               (fun (x, y) wag_offset ->
-                 (x + mouseandtail_offset, y + wag_offset))
-               (Rd.delay mouse wag_delay) wag_offset in
+           let wag_offset = R.S.map (fun _ -> Random.int 10 - 5) ticks in
+           let wag_pos = R.S.l2
+             (fun (x, y) wag_offset -> (x + mouseandtail_offset, y + wag_offset)) 
+             (Rd.delay mouse wag_delay) wag_offset in
              Rd.appendChild body
                (R.S.l1 (fun (x, y) ->
                  let d = div
@@ -93,11 +89,10 @@ let onload ev =
                    ~position:"absolute"
                    ~left:(string_of_int x)
                    ~top:(string_of_int y)
-                   ~padding:"10px" [ (* Html.createTextarea ~name:(js "the mouse!") Html.document *)] 
+                   ~padding:"10px" [ Html.document ## createTextNode (js"is happy!") ] 
                  in
                 (gen(), (d :> Dom.node Js.t))) wag_pos);
            Js.Opt.return ()));
-
   Js._false
 
 (* ;; *)
