@@ -29,7 +29,38 @@ let mouse () =
     send_event (mx, my);
     Js._false
   in
-  addEventListener (document :> eventTarget Js.t) Event.mousemove (handler receive) Js._false;
+  ignore (addEventListener (document :> eventTarget Js.t) Event.mousemove (handler receive) Js._false);
   event
-  
 
+let get id = Dom_html.document ## getElementById (Js.string id)
+
+let create_input_value f =
+  let element = Dom_html.createInput (Dom_html.document) in
+  Dom.appendChild (Dom_html.document ## body) element;
+  S.map f (input_value "4" element)
+
+let input_value f id =
+  Js.Opt.map (get id)
+    (fun element ->
+      let element = ((Js.Unsafe.coerce element) : Dom_html.inputElement Js.t) in
+      S.map f (input_value "3" element))
+
+(* let input_value f name = *)
+(*   mk_input_value f *)
+
+let int_value = input_value int_of_string
+let float_value = input_value float_of_string
+  
+let appendChild n =
+  let n = (n :> Dom.node Js.t) in
+  let old = ref None in
+  let update r =
+  ignore
+    (match !old with
+      | None -> n ## appendChild (r)
+      | Some oc -> n ## replaceChild (r, oc));
+  old := Some r in
+  fun nb ->
+  S.l1 update nb
+  
+  
