@@ -24,7 +24,7 @@ ${APP_NAME}.js: ${CLIENT_OBJS}
 
 _client/%.cmo: %.ml
 	cp ../../${LIB_FILES} .
-	${JS_OF_ELIOM} ${LIB_FILES} $< -o $@
+	${JS_OF_OCAML}  ${LIB_FILES} $< -o $@
 	-rm -f ${LIB_FILES}
 
 
