@@ -9,7 +9,7 @@ let iter f lst =
     f (lst ## item (i))
   done
 
-let onload () =
+let onload ev =
   let (>>=) = Js.Opt.bind in
 
   (* let delay = 300. in *)
@@ -31,24 +31,60 @@ let onload () =
     div ## style ## left <- js left;
     div ## style ## top <- js top;
     List.iter (fun c -> ignore(Dom.appendChild div (c :> Dom.node Js.t))) cs;
-    (div :> Dom.node Js.t) in
+    div
+  in
+
+  let gen =
+    let i = ref 0 in
+    fun () -> incr i; !i
+  in
 
   let mouse = Rd.mouse () in
+  ignore(body >>= 
+           (fun body ->
+             ignore (Rd.appendChild body
+               (R.S.l1 (fun (x, y) ->
+                 let d = div
+                   ~id:"themouse"
+                   ~color:"#FFFFFF"
+                   ~backgroundColor:"#ff0000"
+                   ~position:"absolute"
+                   ~left:(string_of_int x)
+                   ~top:(string_of_int y)
+                   ~padding:"10px" [ (* Html.createTextinput ~name:(js "the mouse!") Html.document *)] 
+                 in
+                (gen(), (d :> Dom.node Js.t)))  mouse));
+             Html.document##getElementById (js"themouse") >>= fun themouse ->
+             let mouse_offset = themouse ## offsetWidth in
+             let tail_pos = 
+               Rd.delay (R.S.l1 (fun (x, y) -> (float_of_int (x + mouse_offset), float_of_int y)) mouse) 200. in
+             Rd.appendChild body
+               (R.S.l1 (fun (x, y) ->
+                 let d = div
+                   ~id:"tail"
+                   ~color:"#FF0000"
+                   ~backgroundColor:"#ff0000"
+                   ~position:"absolute"
+                   ~left:(string_of_int (int_of_float x))
+                   ~top:(string_of_int (int_of_float y))
+                   ~padding:"10px" [ (* Html.createTextarea ~name:(js "the mouse!") Html.document *)] 
+                 in
+                (gen(), (d :> Dom.node Js.t))) tail_pos);
+               Js.Opt.return ()));
+  Js._false
 
-  body >>= (fun body ->
-      Rd.appendChild body
-        (R.S.l1 (fun (x, y) ->
-          div
-            ~id:"themouse"
-            ~color:"#FFFFFF"
-            ~backgroundColor:"#000000"
-            ~position:"absolute"
-            ~left:(string_of_int x)
-            ~top:(string_of_int y)
-            ~padding:"10px"
-            [ Html.createTextarea ~name:(js "the mouse!") Html.document])  mouse);
-    Js.Opt.return ());
-  ()
+
+(*   Fd.appendChild body *)
+(*     (F.blift tail_pos (fun (x, y) -> *)
+(*       div *)
+(*         ~id:"tail" *)
+(*         ~color:"#FF0000" *)
+(*         ~backgroundColor:"#000000" *)
+(*         ~position:"absolute" *)
+(*         ~left:(string_of_int x) *)
+(*         ~top:(string_of_int y) *)
+(*         ~padding:"10px" *)
+(*         [ D.document#createTextNode "its tail!" ])); *)
 
 
 (*   let mouse_offset = (D.document#getElementById "themouse")#_get_offsetWidth in *)
@@ -88,5 +124,5 @@ let onload () =
 (*         [ D.document#createTextNode "is happy!" ])); *)
 
 (* ;; *)
-
-(* D.window#_set_onload (Ocamljs.jsfun onload) *)
+;;
+Html.window##onload <- (Html.handler onload)
