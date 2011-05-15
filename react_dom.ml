@@ -68,32 +68,32 @@ let delay s =
   let time = ref 0. in
   fun ms ->
   let pending = Queue.create () in
-  let news, send = S.create (0.,0.) in
+  let news, send = S.create None in
   let send _ =
     time := !time +. 10.;
-    (* (if !time > ms then time := 0.); *)
     let rec loop () =
       try
-      let (t, s) = Queue.peek pending in
-      if t < !time -. ms then
-        begin
-            let (_,s) = Queue.pop pending in
-            send s;
-            loop ()
-        end
+      (match Queue.peek pending with
+          (t, s) ->
+            if t < !time -. ms then
+              begin
+                let (_,s) = Queue.pop pending in
+                send (Some s);
+                loop ()
+              end)
       with Queue.Empty -> ()
     in
       loop ()
   in
-  let rec timeout_id = ref (lazy (window ## setTimeout (Js.wrap_callback (loop send), 10.)))
+  let rec timeout_id = ref (lazy (window ## setTimeout (Js.wrap_callback (loop send), accuracy)))
   and loop f ev =
     f ();
-    timeout_id := (lazy window ## setTimeout (Js.wrap_callback (loop send), 10.));
+    timeout_id := (lazy window ## setTimeout (Js.wrap_callback (loop send), accuracy));
     ignore (Lazy.force !timeout_id);
   in
     ignore (Lazy.force !timeout_id);
     S.l1 (fun x -> Queue.add (!time, x) pending) s;
-    news
+    S.fmap (fun x -> x) (S.value s) news
     
 
   

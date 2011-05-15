@@ -57,7 +57,7 @@ let onload ev =
              Html.document##getElementById (js"themouse") >>= fun themouse ->
              let mouse_offset = themouse ## offsetWidth in
              let tail_pos = 
-               Rd.delay (R.S.l1 (fun (x, y) -> (float_of_int (x + mouse_offset), float_of_int y)) mouse) 200. in
+               Rd.delay (R.S.l1 (fun (x, y) -> (x + mouse_offset), y) mouse) 200. in
              Rd.appendChild body
                (R.S.l1 (fun (x, y) ->
                  let d = div
@@ -65,8 +65,8 @@ let onload ev =
                    ~color:"#FF0000"
                    ~backgroundColor:"#ff0000"
                    ~position:"absolute"
-                   ~left:(string_of_int (int_of_float x))
-                   ~top:(string_of_int (int_of_float y))
+                   ~left:(string_of_int x)
+                   ~top:(string_of_int y)
                    ~padding:"10px" [ (* Html.createTextarea ~name:(js "the mouse!") Html.document *)] 
                  in
                 (gen(), (d :> Dom.node Js.t))) tail_pos);
