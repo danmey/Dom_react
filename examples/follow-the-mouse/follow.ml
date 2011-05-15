@@ -40,26 +40,30 @@ let onload ev =
   in
 
   let mouse = Rd.mouse () in
-  ignore(Html.document##getElementById (js"body") >>= 
-           (fun body ->
-             ignore (Rd.appendChild body
-               (R.S.l1 (fun (x, y) ->
-                 let d = div
-                   ~id:"themouse"
-                   ~color:"#FFFFFF"
-                   ~backgroundColor:"#000000"
-                   ~position:"absolute"
-                   ~left:(string_of_int x)
-                   ~top:(string_of_int y)
-                   ~padding:"10px" [ Html.document ## createTextNode (js"the mouse!") ] 
+  ignore 
+    (Html.document##getElementById (js"body") >>= 
+       (fun body ->
+         ignore 
+           (Rd.appendChild body
+              (R.S.l1 (fun (x, y) ->
+                let d = div
+                  ~id:"themouse"
+                  ~color:"#FFFFFF"
+                  ~backgroundColor:"#000000"
+                  ~position:"absolute"
+                  ~left:(string_of_int x)
+                  ~top:(string_of_int y)
+                  ~padding:"10px" [ Html.document ## createTextNode (js"the mouse!") ] 
                  in
                 (gen(), (d :> Dom.node Js.t)))  mouse));
 
-             Html.document ## getElementById (js"themouse") >>= fun themouse ->
-             let mouse_offset = themouse ## offsetWidth in
-             let tail_pos = 
-               Rd.delay (R.S.l1 (fun (x, y) -> (x + mouse_offset), y) mouse) delay in
-             Rd.appendChild body
+         Html.document ## getElementById (js"themouse") >>= fun themouse ->
+
+         let mouse_offset = themouse ## offsetWidth in
+         let tail_pos = 
+           Rd.delay (R.S.l1 (fun (x, y) -> (x + mouse_offset), y) mouse) delay in
+
+         Rd.appendChild body
                (R.S.l1 (fun (x, y) ->
                  let d = div
                    ~id:"tail"
@@ -73,25 +77,29 @@ let onload ev =
                 (gen(), (d :> Dom.node Js.t))) tail_pos);
 
            let wag_delay = delay *. 1.5 in
+
            Html.document ## getElementById (js"tail") >>= fun tail ->
+           
            let mouseandtail_offset = mouse_offset + tail ## offsetWidth in
            let ticks, _ = Rd.ticks 100. in
            let wag_offset = R.S.map (fun _ -> Random.int 10 - 5) ticks in
+           
            let wag_pos = R.S.l2
              (fun (x, y) wag_offset -> (x + mouseandtail_offset, y + wag_offset)) 
              (Rd.delay mouse wag_delay) wag_offset in
-             Rd.appendChild body
-               (R.S.l1 (fun (x, y) ->
-                 let d = div
-                   ~id:"tail"
-                   ~color:"#FFFF00"
-                   ~backgroundColor:"#000000"
-                   ~position:"absolute"
-                   ~left:(string_of_int x)
-                   ~top:(string_of_int y)
-                   ~padding:"10px" [ Html.document ## createTextNode (js"is happy!") ] 
-                 in
-                (gen(), (d :> Dom.node Js.t))) wag_pos);
+           Rd.appendChild body
+             (R.S.l1 (fun (x, y) ->
+               let d = div
+                 ~id:"tail"
+                 ~color:"#FFFF00"
+                 ~backgroundColor:"#000000"
+                 ~position:"absolute"
+                 ~left:(string_of_int x)
+                 ~top:(string_of_int y)
+                 ~padding:"10px" [ Html.document ## createTextNode (js"is happy!") ] 
+               in
+               (gen(), (d :> Dom.node Js.t))) wag_pos);
+
            Js.Opt.return ()));
   Js._false
 
