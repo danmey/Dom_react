@@ -92,7 +92,7 @@ let delay s =
     ignore (Lazy.force !timeout_id);
   in
     ignore (Lazy.force !timeout_id);
-    S.l1 (fun x -> Queue.add (!time, x) pending) s;
+    ignore (S.l1 (fun x -> Queue.add (!time, x) pending) s);
     S.fmap (fun x -> x) (S.value s) news
     
 
