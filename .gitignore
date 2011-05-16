@@ -3,3 +3,5 @@ _client
 *.cm*
 *.js
 *.byte
+/examples/follow-the-mouse/follow.annot
+/react_dom.annot

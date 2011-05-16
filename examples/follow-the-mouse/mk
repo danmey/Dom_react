@@ -2,7 +2,7 @@
 JS_OF_OCAML_PREFIX=`ocamlfind query js_of_ocaml`
 APP=follow
 
-ocamlfind ocamlc -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -g -c ../../react_dom.ml &&\
-ocamlfind ocamlc -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -I ../.. -c ${APP}.ml &&\
-ocamlfind ocamlc -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -I ../.. -g -linkpkg -o ${APP}.byte js_of_ocaml.cma react_dom.cmo ${APP}.cmo &&\
+ocamlfind ocamlc -dtypes -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -g -c ../../react_dom.ml &&\
+ocamlfind ocamlc -dtypes -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -I ../.. -c ${APP}.ml &&\
+ocamlfind ocamlc -dtypes -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -I ../.. -g -linkpkg -o ${APP}.byte js_of_ocaml.cma react_dom.cmo ${APP}.cmo &&\
 js_of_ocaml -noruntime ${JS_OF_OCAML_PREFIX}/runtime/runtime.js ${JS_OF_OCAML_PREFIX}/runtime/weak.js ${APP}.byte 

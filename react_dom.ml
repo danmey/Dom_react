@@ -63,24 +63,22 @@ let appendChild n nb =
   in
   S.l1 update nb
 
-let delay s =
+let delay s ms =
   let accuracy = 10. in
   let time = ref 0. in
-  fun ms ->
   let pending = Queue.create () in
   let news, send = S.create None in
   let send _ =
     time := !time +. 10.;
     let rec loop () =
       try
-      (match Queue.peek pending with
-          (t, s) ->
-            if t < !time -. ms then
-              begin
-                let (_,s) = Queue.pop pending in
-                send (Some s);
-                loop ()
-              end)
+        let t,(_,s) = Queue.peek pending in
+        if t < !time -. ms then
+          begin
+            let (_,s) = Queue.pop pending in
+            send (Some s);
+            loop ()
+          end
       with Queue.Empty -> ()
     in
       loop ()
