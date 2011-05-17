@@ -197,6 +197,9 @@ module R = Lwt_react
 let js = Js.string
 
 
+let current_picture = ref None
+let opacity_time = ref 0.0
+let current_time = ref 0.0
   let elements_with_tag tag =
     let arr = Dom_html.document ## getElementsByTagName (js tag) in
     let rec loop i acc =
@@ -234,7 +237,11 @@ let js = Js.string
     el ## onmousemove <- Html.handler (fun ev ->
           begin
             hold := false;
-
+            Js.Optdef.map ((el :> Dom.element Js.t)  ## getElementsByTagName (js "img")##item (0)) (fun img ->
+              let img = ((Js.Unsafe.coerce img) : Dom_html.imageElement Js.t) in
+              current_picture := Some (img ## src);
+              current_time := 0.;
+            );
             el ## onmousemove <- Html.handler (fun ev -> Js._false);
             el ## style ## zIndex <- js "10";
 
@@ -266,11 +273,50 @@ let js = Js.string
       Js._false)
 
   let onload ev =
+
+    let div ~id ~color ~backgroundColor ~position ~padding ~left ~top ~width ~height ~src ~transluency =
+      let div = Html.createImg Html.document in
+      div ## setAttribute (js"id", js id);
+      div ## style ## color <- js color;
+      div ## style ## backgroundColor <- js backgroundColor;
+      div ## style ## position <- js position;
+      div ## style ## padding <- js padding;
+      div ## style ## left <- js left;
+      div ## style ## top <- js top;
+      div ## style ## width <- js width;
+      div ## style ## height <- js height;
+      div ## style ## opacity <- Js.Optdef.return transluency;
+      (match !current_picture with
+          Some pic -> let pic = pic ## replace_string (js"/thumbs", js"/mini") in div ## src <- pic;
+        | None -> ());
+      (* List.iter (fun c -> ignore(Dom.appendChild div (c :> Dom.node Js.t))) cs); *)
+      (* img ## style ## height <- (js"100%"); *)
+      div
+    in
+    let updater, _ = Rd.ticks 10. in
+      Rd.appendChild (Html.document ## body)
+        (R.S.l1 (fun x ->
+          current_time := !current_time +. 10.;
+          let d = div
+            ~id:"tail"
+            ~color:"#FF0000"
+            ~backgroundColor:"#000000"
+            ~position:"absolute"
+            ~left:"605"
+            ~top:"3"
+            ~width:"605"
+            ~height:"605"
+            ~src:!current_picture
+            ~transluency:(js(let sec = !current_time/.1000.0 in if sec > 1.0 then "1.0" 
+              else string_of_float sec))
+            ~padding:"10px"
+          in
+          (gen(), (d :> Dom.node Js.t))) updater);
     let divs = List.filter (fun el -> el ## className = js"picture") (elements_with_tag "div") in
     let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) (elements_with_tag "img") in
     for i = 0 to List.length divs - 1 do
-      let x = i mod 10 in
-      let y = i / 10 in
+      let x = i mod 7 in
+      let y = i / 7 in
       let el = List.nth divs i in
       let top =  Js.string (string_of_int (y * 86+3)) in
       let left = Js.string (string_of_int (x * 86+3)) in
@@ -279,6 +325,7 @@ let js = Js.string
       el ## style ## position <- js "absolute";
       el ## style ## zIndex <- js "1";
     done;
+    Html.document ## body ## style ## backgroundColor <- js"#fa8bf4";
     ignore (List.iter (fun el -> ignore(wrap_element el)) divs);
     Js._false
  
