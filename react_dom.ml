@@ -6,6 +6,7 @@ let ticks ms =
   let time = ref 0. in
   let rec timeout_id = ref (lazy (window ## setTimeout (Js.wrap_callback loop, ms)))
   and loop ev =
+    window ## clearTimeout (Lazy.force !timeout_id);
     send_time !time;
     time := !time +. ms;
     timeout_id := (lazy window ## setTimeout (Js.wrap_callback loop, ms));
@@ -60,6 +61,15 @@ let appendChild n nb =
       | None -> Dom.appendChild n r
       | Some oc -> Dom.replaceChild n r oc);
     old := Some r
+  in
+  S.l1 update nb
+
+let replaceChild old nb =
+  let old = (old :> Dom.node Js.t) in
+  let old = ref old in
+  let update (_,newel) =
+    Js.Opt.map (!old ## parentNode) (fun parent -> parent ## replaceChild (newel, !old);
+    old := newel)
   in
   S.l1 update nb
 
