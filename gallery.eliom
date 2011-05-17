@@ -137,33 +137,6 @@ module Gallery = struct
           with _ -> acc
         in
         loop []
-
-  
-(*   let handler () () = *)
-(*     let sessdat = Eliom_state.get_volatile_data ~table:Auth.my_table () in *)
-(*     return (html *)
-(*               (head  *)
-(*                  (title (pcdata ""))            *)
-(*                  [style ~contenttype:"text/css" *)
-(*                      [cdata_style *)
-(*                          "body *)
-(* { *)
-(*     background-color:#afafff; *)
-(* }"]]) *)
-(*               (body *)
-(*                  (match sessdat with *)
-(*                    | Eliom_state.Data name -> *)
-(*                      List.map *)
-(*                        (fun dirname -> *)
-(*                          (div [div [h1 [pcdata dirname]]; *)
-(*                          div (thumbnails dirname)])) (dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db") *)
-(*                    | Eliom_state.Data_session_expired *)
-(*                    | Eliom_state.No_data -> [Auth.login_box ()] *)
-(*                  ))) *)
-      
-  (* let register () = *)
-  (*   Eliom_output.Xhtml.register ~service:service handler; *)
-
 end
 
 (* -------------------------------------------------------- *)
@@ -205,65 +178,17 @@ let draw_server, image_string =
      Buffer.contents b
    ))
 
-(* let _ = Lwt_stream.iter draw_server (Eliom_bus.stream bus) *)
-
-let picture_list_service =
-  Eliom_output.Text.register_service
-    ~path:["picture_list"]
-    ~get_params:Eliom_parameters.unit
-    (fun () () -> Lwt.return ("db/2011/thumbnails/DSC00253.jpg", "image/jpg"))
 
 let main_service =
   My_appl.register_service ~path:[""] ~get_params:Eliom_parameters.unit
     (fun () () ->
-       (* Eliom_services.onload *)
-       (*   {{ *)
-       (*     (\* let canvas = Dom_html.createCanvas Dom_html.document in *\) *)
-       (*     (\* let ctx = canvas##getContext (Dom_html._2d_) in *\) *)
-       (*     (\* canvas##width <- width; canvas##height <- height; *\) *)
-       (*     (\* ctx##lineCap <- Js.string "round"; *\) *)
-
-       (*     (\* Dom.appendChild Dom_html.document##body canvas; *\) *)
-
-       (*     (\* (\\* The initial image: *\\) *\) *)
-       (*     (\* let img = Dom_html.createImg Dom_html.document in *\) *)
-       (*     (\* img##alt <- Js.string "canvas"; *\) *)
-       (*     (\* img##src <- Js.string (Eliom_output.Html5.make_string_uri ~service:%picture_list_service ()); *\) *)
-       (*     (\* img##onload <- Dom_html.handler (fun ev -> ctx##drawImage(img, 0., 0.); Js._false); *\) *)
-
-       (*     (\* let x = ref 0 and y = ref 0 in *\) *)
-       (*     (\* let set_coord ev = *\) *)
-       (*     (\*   let x0, y0 = Dom_html.elementClientPosition canvas in *\) *)
-       (*     (\*   x := ev##clientX - x0; y := ev##clientY - y0 in *\) *)
-       (*     (\* let compute_line ev = *\) *)
-       (*     (\*   let oldx = !x and oldy = !y in *\) *)
-       (*     (\*   set_coord ev; *\) *)
-       (*     (\*   ("#ff9933", 5, (oldx, oldy), (!x, !y)) *\) *)
-       (*     (\* in *\) *)
-       (*     (\* let (bus:messages Eliom_bus.t) = %bus in *\) *)
-       (*     (\* let line ev = *\) *)
-       (*     (\*   let v = compute_line ev in *\) *)
-       (*     (\*   (\\* let _ = Eliom_bus.write bus v in *\\) *\) *)
-       (*     (\*   draw ctx v *\) *)
-
-       (*     (\* in *\) *)
-       (*     (\* let imgs = Dom_html.document ## getElementsByTagName (Js.string "img") in *\) *)
-       (*     (\* (Js.Optdef.iter (imgs ## item (0)) (fun f -> Dom_html.window ## alert (f ## tagName))); *\) *)
-       (*     let _ = Dom_html.window ## alert (Js.string "nice") in *)
-       (*     () *)
-       (*      (\* let _ = Lwt_stream.iter (draw ctx) (Eliom_bus.stream bus) in *\) *)
-       (*     (\* ignore (run (mousedowns canvas *\) *)
-       (*     (\*                (arr (fun ev -> set_coord ev; line ev) *\) *)
-       (*     (\*                 >>> first [mousemoves Dom_html.document (arr line); *\) *)
-       (*     (\*                            mouseup Dom_html.document >>> (arr line)])) ()); *\) *)
-       (*   }}; *)
       Lwt.return
-(* []p [pcdata "Reactive programming"]]) *)
-        (List.map
-           (fun dirname ->
-             (div [div [h1 [pcdata dirname]];
-                   div (Gallery.thumbnails "2011")]))
-           (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db")))
+      (List.map
+         (fun dirname ->
+           (div [div [h1 [pcdata dirname]];
+                 div (Gallery.thumbnails "2011")]))
+         (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db")))
+
 {client{
 module Html = Dom_html
 module Dom = Dom
@@ -343,8 +268,6 @@ let js = Js.string
   let onload ev =
     let divs = List.filter (fun el -> el ## className = js"picture") (elements_with_tag "div") in
     let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) (elements_with_tag "img") in
-    (* let _ = List.iter (fun el -> Dom.appendChild el (Dom_html.document ## createTextNode (js"the mouse!"))) divs in *)
-    (* List.iter (fun el -> el ## onmouseover <- Dom_html.handler (fun ev -> Js._false)) divs; *)
     for i = 0 to List.length divs - 1 do
       let x = i mod 10 in
       let y = i / 10 in
