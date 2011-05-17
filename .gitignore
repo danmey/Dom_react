@@ -10,3 +10,4 @@
 /_server/gallery.o
 /gallery.a
 /react-dom.ml
+/gallery.type_mli

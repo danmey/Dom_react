@@ -17,13 +17,13 @@ SERVER_FILES := ${wildcard *.eliom}
 
 ## Source files for the client part
 
-CLIENT_FILES :=  react_dom.ml orbit.ml ${wildcard *.eliom}
+CLIENT_FILES := react_dom.ml ${wildcard *.eliom}
 
 ## Needed binaries
 
-ELIOMC      := eliomc
-ELIOMOPT    := eliomopt
-ELIOMDEP    := eliomdep
+ELIOMC      := eliomc -annot
+ELIOMOPT    := eliomopt -annot
+ELIOMDEP    := eliomdep -annot
 JS_OF_ELIOM := js_of_eliom
 
 ## Where to put intermediate object files.

@@ -124,27 +124,21 @@ module Gallery = struct
     dirs
 
   let thumbnails dirname =
-    let dir = Unix.opendir ("/home/spec/prog/worx/Current/ocsigen-auth/db/" ^ dirname ^ "/thumbnails") in
-      let rec table_row trows =
-        let rec cell i acc =
+    let dir = Unix.opendir ("/home/spec/prog/worx/Current/ocsigen-auth/db/" ^ dirname ^ "/thumbs") in
+        let rec loop acc =
           try
             let filename = Unix.readdir dir in
-            let img = 
-              img ~alt:filename
+            let img =
+              div ~a:[a_class ["picture"]]
+              [img  ~alt:filename
                 ~src:(Eliom_output.Html5.make_uri
-                        ~service:(Eliom_services.static_dir ()) ["db";dirname;"thumbnails";filename]) () in
-            let thumbnail = td [div [img]] in
-            let acc = thumbnail :: acc in
-            if i = 15 then
-              table_row ((tr (List.tl acc)) :: trows)
-            else
-              cell (i+1) acc
-          with _ -> trows
+                        ~service:(Eliom_services.static_dir ()) ["db";dirname;"thumbs";filename]) ()] in
+            loop (img :: acc)
+          with _ -> acc
         in
-        cell 0 [] in
-      let rows = table_row [] in
-      [table (List.hd rows) (List.tl rows)]
+        loop []
 
+  
 (*   let handler () () = *)
 (*     let sessdat = Eliom_state.get_volatile_data ~table:Auth.my_table () in *)
 (*     return (html *)
@@ -263,77 +257,112 @@ let main_service =
        (*     (\*                 >>> first [mousemoves Dom_html.document (arr line); *\) *)
        (*     (\*                            mouseup Dom_html.document >>> (arr line)])) ()); *\) *)
        (*   }}; *)
-      Lwt.return [])
+      Lwt.return
 (* []p [pcdata "Reactive programming"]]) *)
-        (* (List.map *)
-        (*    (fun dirname -> *)
-        (*      (div [div [h1 [pcdata dirname]]; *)
-        (*            div (Gallery.thumbnails "2011")])) *)
-        (*    (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db"))) *)
+        (List.map
+           (fun dirname ->
+             (div [div [h1 [pcdata dirname]];
+                   div (Gallery.thumbnails "2011")]))
+           (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db")))
 {client{
-  open Lwt_react
-  (* let _ = *)
-  (*   let signal, stop = React_dom.ticks 0.1 in *)
-  (*   let pr_x = S.map  *)
-  (*     (fun x -> *)
-  (*       Dom_html.window ## alert (Js.string (string_of_float x)); *)
-  (*       stop () *)
-  (*     ) signal in *)
+module Html = Dom_html
+module Dom = Dom
+module Rd = React_dom
+module R = Lwt_react
+let js = Js.string
 
-  (*   Dom_html.window ## onload <- Dom_html.handler (fun _ -> *)
-  (*     let imgs = Dom_html.document ## images in *)
-  (*     for i = 0 to (imgs ## length) - 1 do *)
-  (*       let image = imgs ## item (i) in *)
-  (*       (Js.Optdef.iter image) (fun img ->  *)
-  (*         img ## onclick <- Dom_html.handler  *)
-  (*           (fun _ ->  *)
-  (*             let src = img ## src in *)
-  (*             let src = src ## replace_string ((Js.string "/thumbnails"), (Js.string "")) in *)
-  (*             img ## src <- src; *)
-  (*             Js._true)) *)
-  (*     done; *)
-  (*     Js._true) *)
-(* let onload _ = *)
-(*   let (>>=) = Js.Opt.bind in *)
-(*   let canvas = Dom_html.createCanvas Dom_html.document in *)
-(*   canvas ## setAttribute ((Js.string "style"), (Js.string "border-style:solid")); *)
-(*   Dom.appendChild Dom_html.document ## body canvas; *)
-(*   let ctx = canvas##getContext (Dom_html._2d_) in *)
-(*   canvas##width <- width; canvas##height <- height; *)
 
-  (* (get "canvas") >>= *)
-  (*   (fun canvas -> *)
+  let elements_with_tag tag =
+    let arr = Dom_html.document ## getElementsByTagName (js tag) in
+    let rec loop i acc =
+      if i < arr ## length then
+        let item = arr ## item (i) in
+        Js.Optdef.case item (fun () -> loop (i+1) acc) (fun el -> loop (i+1) (el :: acc))
+      else acc in
+    loop 0 []
 
-  (*     let canvas = ((Js.Unsafe.coerce canvas) : Dom_html.canvasElement Js.t) in *)
-  (*     let ctx = canvas##getContext (Dom_html._2d_) in *)
-  (*     ctx ## fillRect (10., 10., 20., 20.); *)
-  (*     Js.Opt.return ()); *)
-      (* Js.Opt.return ctx) >>= (fun canvas -> *)
-      (*   int_value "balls" >>= (fun balls -> *)
-      (*     int_value "red" >>= (fun red -> *)
-      (*       int_value "blue" >>= (fun blue -> *)
-      (*         int_value "radius" >>= (fun radius -> *)
-      (*           float_value "speed" >>= (fun speed -> *)
-      (*             let mouse = React_dom.mouse () in *)
-      (*             let ticks,_ = React_dom.ticks 0.05 in *)
-      (*             let phase = *)
-      (*               S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed in *)
-      (*             let shapes = *)
-      (*               S.l6 (fun balls radius red blue (mx, my) phase -> *)
-      (*                 build_list balls (fun i -> *)
-      (*                   let t = 2. *. 3.1415 *. float_of_int i /. float_of_int balls +. phase in *)
-      (*                   let left, top = *)
-      (*                     (float_of_int mx +. cos t *. radius, *)
-      (*                      float_of_int my +. sin t *. radius) in *)
-      (*                   let right, bottom = left +. 10., top +. 10.  *)
-      (*                   in *)
-      (*                   canvas ## fillRect (left, top, right, bottom))) *)
-      (*             in *)
-      (*             Js.Opt.return ())))))); *)
-  (* Js._false *)
+  let parse_pixels str =
+    int_of_string (String.sub str 0 ((String.length str) - 2))
+  let div el ~size =
+    let prev_w = el ## clientWidth in
+    let prev_h = el ## clientHeight in
+    let top = el ## offsetTop in
+    let left = el ## offsetLeft in
+    let delta = size - prev_w in
+    let fixup = delta / 2 in
+    let top =  Js.string (string_of_int (top - fixup)) in
+    let left = Js.string (string_of_int (left - fixup)) in
+    let size = string_of_int size in
+    el ## style ## width <- js size;
+    el ## style ## height <- js size;
+    el ## style ## top <- top;
+    el ## style ## left <- left;
+    el
 
-let _ = Dom_html.window ## onload <- Dom_html.handler Orbit.onload
-(* let _ = *)
-(*   let canvas = Dom_html.createCanvas Dom_html.document in *)
-(*   Dom.appendChild Dom_html.document##body canvas *)
+  let gen =
+    let i = ref 0 in
+    fun () -> incr i; !i
+      
+ 
+  let rec wrap_element el =
+    let hold = ref true in
+    el ## onmousemove <- Html.handler (fun ev ->
+          begin
+            hold := false;
+
+            el ## onmousemove <- Html.handler (fun ev -> Js._false);
+            el ## style ## zIndex <- js "10";
+
+            let refresh, stop = Rd.ticks 30. in
+
+            let d x =
+              let d = div el
+                ~size:(int_of_float x)
+              in
+              gen(), (d :> Dom.node Js.t) in
+
+            let sinus = R.S.l1 (fun x -> 
+              let value = 80.0 *. sin (x /. 750.0 *. 3.1415) in
+              if !hold then 80.0 else
+              (80.0 +. if value < 0. then 
+                  begin 
+                    stop ();
+                    hold := true;
+                    el ## style ## zIndex <- js "1";
+                    el ## onmousemove <- Html.handler (fun ev -> wrap_element el; Js._false);
+                    0. 
+                  end 
+                else value)) refresh in
+
+            let zoom = R.S.l1 d sinus in
+            let _ = Rd.replaceChild el zoom in
+            ()
+          end;
+      Js._false)
+
+  let onload ev =
+    let divs = List.filter (fun el -> el ## className = js"picture") (elements_with_tag "div") in
+    let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) (elements_with_tag "img") in
+    (* let _ = List.iter (fun el -> Dom.appendChild el (Dom_html.document ## createTextNode (js"the mouse!"))) divs in *)
+    (* List.iter (fun el -> el ## onmouseover <- Dom_html.handler (fun ev -> Js._false)) divs; *)
+    for i = 0 to List.length divs - 1 do
+      let x = i mod 10 in
+      let y = i / 10 in
+      let el = List.nth divs i in
+      let top =  Js.string (string_of_int (y * 86+3)) in
+      let left = Js.string (string_of_int (x * 86+3)) in
+      el ## style ## top <- top;
+      el ## style ## left <- left;
+      el ## style ## position <- js "absolute";
+      el ## style ## zIndex <- js "1";
+    done;
+    ignore (List.iter (fun el -> ignore(wrap_element el)) divs);
+    Js._false
+ 
+  let _ = Dom_html.window##onload <- (Dom_html.handler onload)
+
+
+  
+
+      
 }}
