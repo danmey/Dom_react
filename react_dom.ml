@@ -267,7 +267,7 @@ module S = struct
   let get att el =
     match att with
       | `left -> S.l1 ~eq:(fun _ _ -> false) (fun el -> float (extract_pixels (Js.to_string (el ## style ## left)))) el
-      | `top -> S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## top))) el
+      | `top -> S.l1 (fun el -> float (extract_pixels (Js.to_string (el ## style ## top)))) el
 
   let set el att v =
     ignore (match att with
@@ -279,9 +279,10 @@ module S = struct
   (*       S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## left))) el, *)
   (*       S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## top))) el *)
       
-
-  let (>>) x f = f x
-  let (>>=) v g = g v
+  let ($) f g x = f (g x)
+  let (-->) el att = get att el
+  let (<--) att el = set el att
+  let (>>) att el = el att
   end
 
 end
