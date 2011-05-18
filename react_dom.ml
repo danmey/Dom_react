@@ -262,24 +262,36 @@ module S = struct
       div ## style ## backgroundColor <- ccolor color;
       div) position color width height
 
-  let extract_pixels str = Scanf.sscanf str "%d" (fun x -> x)
+  let extract_value str = Scanf.sscanf str "%d" (fun x -> x)
 
+  let ($) f g x = f (g x)
+  let (<|) f x = f x
   let get att el =
-    match att with
-      | `left -> S.l1 ~eq:(fun _ _ -> false) (fun el -> float (extract_pixels (Js.to_string (el ## style ## left)))) el
-      | `top -> S.l1 (fun el -> float (extract_pixels (Js.to_string (el ## style ## top)))) el
+    let v = float $ extract_value $ Js.to_string in
+    let dispatch el = match att with
+      |`left -> el ## style ## left
+      |`top  -> el ## style ## top 
+      |`opacity  -> Js.Optdef.get (el ## style ## opacity) (fun() -> js"0%")
+    in
+    S.l1 (v $ dispatch) el
 
   let set el att v =
-    ignore (match att with
-      | `left -> S.l2 ~eq:(fun _ _ -> false) (fun el v ->  el ## style ## left <- js (string_of_int (int_of_float v));) el v
-      | `top -> S.l2 (fun el v -> el ## style ## top <- js (string_of_int (int_of_float v))) el v);
+    let c = js $ string_of_int $ int_of_float in
+    let c2 = js $ string_of_float in
+    let dispatch el v' = 
+      let v = c v' in
+      match att with
+      |`left -> el ## style ## left <- v
+      |`top  -> el ## style ## top <- v
+      |`opacity  -> el ## style ## opacity <- Js.Optdef.return <| c2 v'
+    in
+    S.l2 dispatch el v;
     el
 
   (* let position el =  *)
   (*       S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## left))) el, *)
   (*       S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## top))) el *)
       
-  let ($) f g x = f (g x)
   let (-->) el att = get att el
   let (<--) att el = set el att
   let (>>) att el = el att
