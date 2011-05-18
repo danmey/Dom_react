@@ -15,8 +15,12 @@ let onload ev =
   let mouse = mousef () in
   let e = element ~position:mouse () in
   let f = element ~width:(S.const 400.) () in
-  let l = (e --> `left) >> ((`left <-- f) $ Rd.delay 50. ) in
-  let l = (e --> `left) >> ((`opacity <-- f) $ ((/.) (S.const 1000.0))) in
+  let wiggle = (sin time  +. S.const 1.0) *. S.const 0.5 in
+  let ( <* ) = ($) in
+  let css e s = e --> s in
+  let l = e --> `left >> (`left <-- f <* Rd.delay 50.) in
+  let l = css e `left >> (`left <-- f <* Rd.delay 50.) in
+  let l = wiggle >> (`opacity <-- f) in
   Js._false
 ;;
 Html.window##onload <- (Html.handler onload)
