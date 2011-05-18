@@ -38,7 +38,7 @@ let appendChild n nb =
     old := Some r;
     n
   in
-  S.l1 update nb
+  S.l1 ~eq:(fun _ _ -> false) update nb
 
 let replaceChild old nb =
   let old = (old :> Dom.node Js.t) in
@@ -47,18 +47,18 @@ let replaceChild old nb =
     Js.Opt.map (!old ## parentNode) (fun parent -> parent ## replaceChild (newel, !old);
     old := newel)
   in
-  S.l1 update nb
+  S.l1 ~eq:(fun _ _ -> false) update nb
 
 let delay ms s =
   let accuracy = 10. in
   let time = ref 0. in
   let pending = Queue.create () in
-  let news, send = S.create None in
+  let news, send = S.create ~eq:(fun _ _ -> false) None in
   let send _ =
     time := !time +. 10.;
     let rec loop () =
       try
-        let t,(_,s) = Queue.peek pending in
+        let t,s = Queue.peek pending in
         if t < !time -. ms then
           begin
             let (_,s) = Queue.pop pending in
@@ -76,8 +76,8 @@ let delay ms s =
     ignore (Lazy.force !timeout_id);
   in
     ignore (Lazy.force !timeout_id);
-    ignore (S.l1 (fun x -> Queue.add (!time, x) pending) s);
-    S.fmap (fun x -> x) (S.value s) news
+    ignore (S.l1 ~eq:(fun _ _ -> false) (fun x -> Queue.add (!time, x) pending) s);
+    S.fmap ~eq:(fun _ _ -> false) (fun x -> x) (S.value s) news
     
 
 module S = struct
@@ -240,35 +240,40 @@ module S = struct
       ?color:(color=c (0.,0.,0.))
       ?width:(width=c 100.)
       ?height:(height=c 100.)
-      ?left:(left = c 0.)
-      ?top:(top = c 0.) () =
-
+      ()
+      =
     let div = Html.createDiv Html.document in
     Dom.appendChild parent div;
     let position = match position with
-      | Some p -> p
-      | None -> S.l2 (fun left top -> left, top) left top in
-
-    S.l4 (fun (x,y) color width height ->
+      | Some position -> S.l1 (fun x -> Some x) position
+      | None -> S.const None in
+    S.l4 ~eq:(fun _ _ -> false) (fun position color width height ->
       div ## style ## backgroundColor <- ccolor color;
       div ## style ## position <- js"absolute";
-      div ## style ## left <- px x;
-      div ## style ## top <- px y;
+      (match position with
+        |Some (x, y) ->
+          div ## style ## left <- px x;
+          div ## style ## top <- px y
+        | None -> 
+          div ## style ## left <- js"0";
+          div ## style ## top <- js"0");
       div ## style ## width <- px width;
       div ## style ## height <- px height;
       div ## style ## backgroundColor <- ccolor color;
       div) position color width height
 
+  let extract_pixels str = Scanf.sscanf str "%d" (fun x -> x)
+
   let get att el =
     match att with
-      | `left -> S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## left))) el
+      | `left -> S.l1 ~eq:(fun _ _ -> false) (fun el -> float (extract_pixels (Js.to_string (el ## style ## left)))) el
       | `top -> S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## top))) el
 
   let set el att v =
     ignore (match att with
-      | `left -> S.l2 (fun el v -> el ## style ## left <- js (string_of_int (int_of_float v))) el v
+      | `left -> S.l2 ~eq:(fun _ _ -> false) (fun el v ->  el ## style ## left <- js (string_of_int (int_of_float v));) el v
       | `top -> S.l2 (fun el v -> el ## style ## top <- js (string_of_int (int_of_float v))) el v);
-        el
+    el
 
   (* let position el =  *)
   (*       S.l1 (fun el -> float_of_string (Js.to_string (el ## style ## left))) el, *)
