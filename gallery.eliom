@@ -190,6 +190,7 @@ let main_service =
          (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db")))
 
 {client{
+
 module Html = Dom_html
 module Dom = Dom
 module Rd = React_dom
@@ -197,7 +198,7 @@ module R = Lwt_react
 let js = Js.string
 
 
-let current_picture = ref None
+let current_picture : Js.js_string Js.t option ref = ref None
 let opacity_time = ref 0.0
 let current_time = ref 0.0
   let elements_with_tag tag =
@@ -231,46 +232,44 @@ let current_time = ref 0.0
     let i = ref 0 in
     fun () -> incr i; !i
       
- 
-  let rec wrap_element el =
-    let hold = ref true in
+  open R
+  type event = Start of float | Waiting | Progress of float
+
+  let time = Rd.S.time ()
+  let onmousemove el =
+    let event, send = E.create () in
     el ## onmousemove <- Html.handler (fun ev ->
-          begin
-            hold := false;
-            Js.Optdef.map ((el :> Dom.element Js.t)  ## getElementsByTagName (js "img")##item (0)) (fun img ->
-              let img = ((Js.Unsafe.coerce img) : Dom_html.imageElement Js.t) in
-              current_picture := Some (img ## src);
-              current_time := 0.;
-            );
-            el ## onmousemove <- Html.handler (fun ev -> Js._false);
-            el ## style ## zIndex <- js "10";
+      send (S.value time);
+      Js._false);
+    send, event
+  
+  open React
 
-            let refresh, stop = Rd.ticks 30. in
-
-            let d x =
-              let d = div el
-                ~size:(int_of_float x)
-              in
-              gen(), (d :> Dom.node Js.t) in
-
-            let sinus = R.S.l1 (fun x -> 
-              let value = 80.0 *. sin (x /. 750.0 *. 3.1415) in
-              if !hold then 80.0 else
-              (80.0 +. if value < 0. then 
-                  begin 
-                    stop ();
-                    hold := true;
-                    el ## style ## zIndex <- js "1";
-                    el ## onmousemove <- Html.handler (fun ev -> wrap_element el; Js._false);
-                    0. 
-                  end 
-                else value)) refresh in
-
-            let zoom = R.S.l1 d sinus in
-            let _ = Rd.replaceChild el zoom in
-            ()
-          end;
-      Js._false)
+  let rec wrap_element el =
+    let duration = 0.6 in
+    let f d = 0.-.cos (d /. duration *. 3.1415 *.2.) in
+    let resize_div v =
+      let v = f v in
+      let size = 80.0 +. 60.0 *. ((v +. 1.0) *. 0.5) in
+      ignore(div el ~size:(int_of_float size));
+      () 
+    in
+    let send, mouse_down = onmousemove el in
+    let elapsed_time = 
+      E.filter
+        (function Some _ -> true | None -> false)
+        (E.diff (fun a b -> if a -. b > duration then Some a else None)
+           mouse_down) in
+    let elapsed_time = S.hold None elapsed_time in
+    let delta = S.l2 (fun time start -> 
+      match start with 
+        | Some start -> let t = time -. start in t
+        | None -> 0.0) time elapsed_time in
+    let delta = S.filter ( (>) duration) 0. delta in
+    S.map resize_div delta;
+    (* this a nasty work around *)
+    send (~-.duration);
+    mouse_down
 
   let onload ev =
 
@@ -293,27 +292,30 @@ let current_time = ref 0.0
       (* img ## style ## height <- (js"100%"); *)
       div
     in
-    let updater, _ = Rd.ticks 10. in
-      Rd.appendChild (Html.document ## body)
-        (R.S.l1 (fun x ->
-          current_time := !current_time +. 10.;
-          let d = div
-            ~id:"tail"
-            ~color:"#FF0000"
-            ~backgroundColor:"#000000"
-            ~position:"absolute"
-            ~left:"605"
-            ~top:"3"
-            ~width:"605"
-            ~height:"605"
-            ~src:!current_picture
-            ~transluency:(js(let sec = !current_time/.1000.0 in if sec > 1.0 then "1.0" 
-              else string_of_float sec))
-            ~padding:"10px"
-          in
-          (gen(), (d :> Dom.node Js.t))) updater);
+    (* let updater = Rd.S.time () in *)
+    (*   Rd.appendChild (Html.document ## body) *)
+    (*     (R.S.l1 (fun x -> *)
+    (*       current_time := !current_time +. 10.; *)
+    (*       let d = div *)
+    (*         ~id:"tail" *)
+    (*         ~color:"#FF0000" *)
+    (*         ~backgroundColor:"#000000" *)
+    (*         ~position:"absolute" *)
+    (*         ~left:"605" *)
+    (*         ~top:"3" *)
+    (*         ~width:"605" *)
+    (*         ~height:"605" *)
+    (*         ~src:!current_picture *)
+    (*         ~transluency:(js(let sec = !current_time/.1000.0 in if sec > 1.0 then "1.0"  *)
+    (*           else string_of_float sec)) *)
+    (*         ~padding:"10px" *)
+    (*       in *)
+    (*       let d = (d :> Dom.node Js.t) in *)
+    (*       gen (), d) *)
+    (*       updater); *)
     let divs = List.filter (fun el -> el ## className = js"picture") (elements_with_tag "div") in
     let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) (elements_with_tag "img") in
+    ignore (List.iter (fun el -> ignore(wrap_element el)) divs);
     for i = 0 to List.length divs - 1 do
       let x = i mod 7 in
       let y = i / 7 in
@@ -326,7 +328,6 @@ let current_time = ref 0.0
       el ## style ## zIndex <- js "1";
     done;
     Html.document ## body ## style ## backgroundColor <- js"#fa8bf4";
-    ignore (List.iter (fun el -> ignore(wrap_element el)) divs);
     Js._false
  
   let _ = Dom_html.window##onload <- (Dom_html.handler onload)
