@@ -323,5 +323,5 @@ let current_time = ref 0.0
   let _ = Dom_html.window##onload <- (Dom_html.handler onload)
 }}
 let () =
-  (* Eliom_output.Xhtml.register ~service:connect_example connect_example_handler; *)
+  register ~service:connect_example connect_example_handler;
   Eliom_output.Action.register ~service:connect_action connect_action_handler
