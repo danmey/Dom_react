@@ -39,7 +39,8 @@ export ELIOM_TYPE_DIR   := .
 #####################################
 
 all: byte opt
-	echo "reload" > /home/spec/prog/ocsigenserver-1.91/local/var/run/ocsigenserver_command
+
+
 byte:: ${APP_NAME}.cma ${APP_NAME}.js
 opt:: ${APP_NAME}.cmxs ${APP_NAME}.js
 

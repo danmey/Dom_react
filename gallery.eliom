@@ -34,11 +34,6 @@ module My_appl =
 
 let my_table = Eliom_state.create_volatile_table ()
 
-let connect_example =
-  Eliom_services.service
-    ~path:[""]
-    ~get_params:Eliom_parameters.unit
-    ()
 
 let connect_action =
   Eliom_services.post_coservice'
@@ -74,6 +69,17 @@ let login_box =
 (* -------------------------------------------------------- *)
 (* Handler for the "connect_example3" service (main page):    *)
 
+
+
+
+(* -------------------------------------------------------- *)
+(* Handler for connect_action (user logs in):               *)
+
+let connect_action_handler () login =
+  Eliom_state.close_session () >>= fun () ->
+  if login = "fancyfrancy" then
+    Eliom_state.set_volatile_data  ~table:my_table login;
+  return ()
 let gallery_link =
   a
     ~service:(Eliom_services.external_service
@@ -95,16 +101,6 @@ let connect_example_handler () () =
           )))
 
 
-(* -------------------------------------------------------- *)
-(* Handler for connect_action (user logs in):               *)
-
-let connect_action_handler () login =
-  Eliom_state.close_session () >>= fun () ->
-  if login = "fancyfrancy" then
-    Eliom_state.set_volatile_data  ~table:my_table login;
-  return ()
-
-
 (* end *)
 
 module Gallery = struct
@@ -124,7 +120,7 @@ module Gallery = struct
     dirs
 
   let thumbnails dirname =
-    let dir = Unix.opendir ("/home/spec/prog/worx/Current/ocsigen-auth/db/" ^ dirname ^ "/thumbs") in
+    let dir = Unix.opendir ("/home/danmey/repo/gallery/db/" ^ dirname ^ "/thumbs") in
         let rec loop acc =
           try
             let filename = Unix.readdir dir in
@@ -146,20 +142,8 @@ end
 (*   Auth.register () *)
   (* Gallery.register () *)
 
-let main_service =
-  My_appl.register_service ~path:[""] ~get_params:Eliom_parameters.unit
-    (fun () () ->
-      let sessdat = Eliom_state.get_volatile_data ~table:my_table () in
-          Lwt.return
-            (match sessdat with
-              | Eliom_state.Data name ->
-                (List.map
-                   (fun dirname ->
-                     (div [div [h1 [pcdata dirname]];
-                           div (Gallery.thumbnails "2011")]))
-                   (Gallery.dirnames "/home/spec/prog/worx/Current/ocsigen-auth/db"))
-              | Eliom_state.Data_session_expired
-              | Eliom_state.No_data -> [login_box ()]))
+
+
 
 
  
@@ -323,5 +307,19 @@ let current_time = ref 0.0
   let _ = Dom_html.window##onload <- (Dom_html.handler onload)
 }}
 let () =
-  register ~service:connect_example connect_example_handler;
-  Eliom_output.Action.register ~service:connect_action connect_action_handler
+    Eliom_output.Action.register ~service:connect_action connect_action_handler
+
+let ala =
+  My_appl.register_service ~path:[""] ~get_params:Eliom_parameters.unit
+    (fun () () ->
+      let sessdat = Eliom_state.get_volatile_data ~table:my_table () in
+          Lwt.return
+            (match sessdat with
+              | Eliom_state.Data name ->
+                (List.map
+                   (fun dirname ->
+                     (div [div [h1 [pcdata dirname]];
+                           div (Gallery.thumbnails "2011")]))
+                   (Gallery.dirnames "/home/danmey/repo/gallery/db"))
+              | Eliom_state.Data_session_expired
+              | Eliom_state.No_data -> [login_box ()]))
