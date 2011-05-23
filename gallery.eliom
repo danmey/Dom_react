@@ -201,6 +201,7 @@ let js = Js.string
 let current_picture : Js.js_string Js.t option ref = ref None
 let opacity_time = ref 0.0
 let current_time = ref 0.0
+
   let elements_with_tag tag =
     let arr = Dom_html.document ## getElementsByTagName (js tag) in
     let rec loop i acc =
@@ -210,8 +211,6 @@ let current_time = ref 0.0
       else acc in
     loop 0 []
 
-  let parse_pixels str =
-    int_of_string (String.sub str 0 ((String.length str) - 2))
   let div el ~size =
     let prev_w = el ## clientWidth in
     let prev_h = el ## clientHeight in
@@ -228,23 +227,24 @@ let current_time = ref 0.0
     el ## style ## left <- left;
     el
 
-  let gen =
-    let i = ref 0 in
-    fun () -> incr i; !i
-      
-  open R
-  type event = Start of float | Waiting | Progress of float
+  open React
 
   let time = Rd.S.time ()
+
   let onmousemove el =
     let event, send = E.create () in
     el ## onmousemove <- Html.handler (fun ev ->
       send (S.value time);
       Js._false);
     send, event
-  
-  open React
 
+  let onmousedown el =
+    let event, send = E.create () in
+    el ## onmousedown <- Html.handler (fun ev ->
+      send (S.value time);
+      Js._false);
+    event
+  
   let rec wrap_element el =
     let duration = 0.6 in
     let f d = 0.-.cos (d /. duration *. 3.1415 *.2.) in
@@ -254,13 +254,14 @@ let current_time = ref 0.0
       ignore(div el ~size:(int_of_float size));
       () 
     in
-    let send, mouse_down = onmousemove el in
-    let elapsed_time = 
+    let send, mouse_over = onmousemove el in
+    let mouse_down = onmousedown el in
+    let elapsed_time0 = 
       E.filter
         (function Some _ -> true | None -> false)
         (E.diff (fun a b -> if a -. b > duration then Some a else None)
-           mouse_down) in
-    let elapsed_time = S.hold None elapsed_time in
+           mouse_over) in
+    let elapsed_time = S.hold None elapsed_time0 in
     let delta = S.l2 (fun time start -> 
       match start with 
         | Some start -> let t = time -. start in t
@@ -269,7 +270,7 @@ let current_time = ref 0.0
     S.map resize_div delta;
     (* this a nasty work around *)
     send (~-.duration);
-    mouse_down
+    ()
 
   let onload ev =
 
@@ -285,40 +286,48 @@ let current_time = ref 0.0
       div ## style ## width <- js width;
       div ## style ## height <- js height;
       div ## style ## opacity <- Js.Optdef.return transluency;
-      (match !current_picture with
-          Some pic -> let pic = pic ## replace_string (js"/thumbs", js"/mini") in div ## src <- pic;
-        | None -> ());
-      (* List.iter (fun c -> ignore(Dom.appendChild div (c :> Dom.node Js.t))) cs); *)
-      (* img ## style ## height <- (js"100%"); *)
+      (* (match !current_picture with *)
+      (*     Some pic -> let pic = pic ## replace_string (js"/thumbs", js"/mini") in div ## src <- pic; *)
+      (*   | None -> ()); *)
+      div ## src <- src;
       div
     in
-    (* let updater = Rd.S.time () in *)
-    (*   Rd.appendChild (Html.document ## body) *)
-    (*     (R.S.l1 (fun x -> *)
-    (*       current_time := !current_time +. 10.; *)
-    (*       let d = div *)
-    (*         ~id:"tail" *)
-    (*         ~color:"#FF0000" *)
-    (*         ~backgroundColor:"#000000" *)
-    (*         ~position:"absolute" *)
-    (*         ~left:"605" *)
-    (*         ~top:"3" *)
-    (*         ~width:"605" *)
-    (*         ~height:"605" *)
-    (*         ~src:!current_picture *)
-    (*         ~transluency:(js(let sec = !current_time/.1000.0 in if sec > 1.0 then "1.0"  *)
-    (*           else string_of_float sec)) *)
-    (*         ~padding:"10px" *)
-    (*       in *)
-    (*       let d = (d :> Dom.node Js.t) in *)
-    (*       gen (), d) *)
-    (*       updater); *)
-    let divs = List.filter (fun el -> el ## className = js"picture") (elements_with_tag "div") in
-    let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) (elements_with_tag "img") in
-    ignore (List.iter (fun el -> ignore(wrap_element el)) divs);
+    let gen =
+      let i = ref 0 in
+      fun () -> incr i; !i in
+    let preview row src =
+      let img = (div
+        ~id:"tail"
+        ~color:"#000000"
+        ~backgroundColor:"#000000"
+        ~position:"absolute"
+        ~left:"605"
+        ~top:(string_of_int (3 + (602) * row))
+        ~width:"605"
+        ~height:"605"
+        ~src:(js src)                
+        ~transluency:(js"1.0")
+        ~padding:"10px") in
+      Dom.appendChild (Html.document ## body) img;
+      img
+    in
+    let imgs = elements_with_tag "img" in
+    let divs = elements_with_tag "div" in
+    let imgsa = Array.of_list imgs in
+    let previews = Array.init 4 (fun i ->
+      let pic = (Js.Unsafe.coerce imgsa.(i) : Dom_html.imageElement Js.t) ## src in
+      let pic = Js.to_string (pic ## replace_string (js"/thumbs", js"/mini")) in
+      Html.document ## title <- js pic;
+      preview i pic) in
+
+    
+    let divs = List.filter (fun el -> el ## className = js"picture") divs in
+    let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) imgs in
+    List.iter wrap_element divs;
     for i = 0 to List.length divs - 1 do
       let x = i mod 7 in
       let y = i / 7 in
+      let section = y / 7 in
       let el = List.nth divs i in
       let top =  Js.string (string_of_int (y * 86+3)) in
       let left = Js.string (string_of_int (x * 86+3)) in
@@ -326,14 +335,15 @@ let current_time = ref 0.0
       el ## style ## left <- left;
       el ## style ## position <- js "absolute";
       el ## style ## zIndex <- js "1";
+      el ## onmousedown <- Html.handler (fun ev ->
+        let pic = (Js.Unsafe.coerce imgsa.(i) : Dom_html.imageElement Js.t) ## src in
+        let pic = pic ## replace_string (js"/thumbs", js"/mini") in
+        previews.(section) ## src <- pic;
+      Js._false);
+
     done;
-    Html.document ## body ## style ## backgroundColor <- js"#fa8bf4";
+    Html.document ## body ## style ## backgroundColor <- js"#8f8f95";
     Js._false
  
   let _ = Dom_html.window##onload <- (Dom_html.handler onload)
-
-
-  
-
-      
 }}
