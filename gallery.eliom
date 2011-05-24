@@ -7,6 +7,14 @@
   let height = 400
   let app_root_dir = "/home/spec/prog/worx/Current/gallery/"
   let abs_dir rel = app_root_dir ^ rel
+  let is_real_name name =
+  let char_at_end i c = 
+    if String.length name - 1 - i >= 0 then name.[String.length name - 1 - i] == c 
+    else true
+  in
+    not (char_at_end 1 '/' && char_at_end 0 '.' 
+      || char_at_end 2 '/' && char_at_end 1 '.' && char_at_end 0 '.')
+
 }}
 
 module My_appl =
@@ -36,74 +44,24 @@ open Lwt
 
 let my_table = Eliom_state.create_volatile_table ()
 
-
 let connect_action =
   Eliom_services.post_coservice'
     ~name:"connect"
     ~post_params:(Eliom_parameters.string "login")
     ()
 
-(* As the handler is very simple, we register it now: *)
-(* let disconnect_action = *)
-(*   Eliom_output.Action.register_post_coservice' *)
-(*     ~name:"disconnect" *)
-(*     ~post_params:Eliom_parameters.unit *)
-(*     (fun () () -> *)
-(*       Eliom_state.close_session ()) *)
-
-
-(* -------------------------------------------------------- *)
-(* login ang logout boxes:                                  *)
-
-(* let disconnect_box s = *)
-(*   post_form ~service:disconnect_action *)
-(*     (fun _ -> [p [string_input *)
-(*                     ~input_type:`Submit ~value:s ()]]) () *)
-
 let login_box =
   post_form ~service:connect_action
     (fun loginname ->
       [p [pcdata "?";string_input
              ~input_type:`Password ~name:loginname ();]])
-    
-
-
-(* -------------------------------------------------------- *)
-(* Handler for the "connect_example3" service (main page):    *)
-
-
-
-
-(* -------------------------------------------------------- *)
-(* Handler for connect_action (user logs in):               *)
 
 let connect_action_handler () login =
   Eliom_state.close_session () >>= fun () ->
   if login = "fancyfrancy" then
     Eliom_state.set_volatile_data  ~table:my_table login;
   return ()
-let gallery_link =
-  a
-    ~service:(Eliom_services.external_service
-       ~prefix:"http://fr.wikipedia.org"
-       ~path:["wiki";""]
-       ~get_params:Eliom_parameters.unit
-   ()) [] ()
 
-let connect_example_handler () () =
-  let sessdat = Eliom_state.get_volatile_data ~table:my_table () in
-  return (html
-       (head (title (pcdata "")) [])
-       (body
-          (match sessdat with
-          | Eliom_state.Data name ->
-            [p [gallery_link]]
-          | Eliom_state.Data_session_expired
-          | Eliom_state.No_data -> [login_box ()]
-          )))
-
-
-(* end *)
 
 module Gallery = struct
   open Lwt
@@ -111,13 +69,12 @@ module Gallery = struct
   let dirnames () =
     let static_dir = Eliom_services.static_dir () in
     let pic_dir = Eliom_output.Html5.make_string_uri ~service:static_dir ["db"] in
-    print_endline pic_dir;
-    flush stdout;
     let dir = Unix.opendir (abs_dir pic_dir) in
     let rec loop () =
       try
-        let name = Unix.readdir dir in
-        if name <> "." && name <> ".." then name :: loop ()
+        let filename = Unix.readdir dir in
+        if is_real_name filename then
+          filename :: loop ()
         else loop ()
       with _ -> []
     in
@@ -132,12 +89,14 @@ module Gallery = struct
     let rec loop acc =
       try
         let filename = Unix.readdir dir in
+        if is_real_name filename then
         let img =
               div ~a:[a_class ["picture"]]
                 [img  ~alt:filename
                     ~src:(Eliom_output.Html5.make_uri
                             ~service:static_dir ["db";gallery_name;"thumbs";filename]) ()] in
         loop (img :: acc)
+        else loop acc
       with _ -> acc
     in
     loop []
@@ -238,9 +197,6 @@ let current_time = ref 0.0
       div ## style ## width <- js width;
       div ## style ## height <- js height;
       div ## style ## opacity <- Js.Optdef.return transluency;
-      (* (match !current_picture with *)
-      (*     Some pic -> let pic = pic ## replace_string (js"/thumbs", js"/mini") in div ## src <- pic; *)
-      (*   | None -> ()); *)
       div ## src <- src;
       div
     in
