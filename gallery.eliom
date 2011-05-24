@@ -21,7 +21,17 @@ module My_appl =
   Eliom_output.Eliom_appl (
     struct
       let application_name = "gallery"
-      let params = Eliom_output.default_appl_params
+      let params =
+	{ Eliom_output.default_appl_params with
+	  
+          Eliom_output.ap_headers_before =
+            [
+              HTML5.M.link ~rel:[ `Stylesheet ]
+                ~href:(HTML5.M.uri_of_string"./style.css")
+                ();
+            ];
+	}
+
     end)
 
 {client{
@@ -65,6 +75,14 @@ let connect_action_handler () login =
 
 module Gallery = struct
   open Lwt
+
+let image_date filename =
+  let open CalendarLib in
+    let date_input = Unix.open_process_in (Printf.sprintf "jhead %s|grep \"Date/Time\" | sed -n 's/[^:]\\+: \\([^ ]\\+\\).*/\\1/p'" filename) in
+    let date = input_line date_input in
+    close_in date_input;
+    let date = Printer.Date.from_fstring "%Y:%m:%d" date in
+    Printer.Date.sprint "%d %B %Y (%A)" date
       
   let dirnames () =
     let static_dir = Eliom_services.static_dir () in
@@ -79,6 +97,7 @@ module Gallery = struct
       with _ -> []
     in
     let dirs = loop () in
+    (* Unix.closedir dir; *)
     List.iter print_endline dirs;
     dirs
 
@@ -86,20 +105,26 @@ module Gallery = struct
     let static_dir = Eliom_services.static_dir () in
     let pic_dir = Eliom_output.Html5.make_string_uri ~service:static_dir ["db";gallery_name;"thumbs";] in
     let dir = Unix.opendir (abs_dir pic_dir) in
-    let rec loop acc =
+    let rec loop prev_date acc =
       try
         let filename = Unix.readdir dir in
         if is_real_name filename then
-        let img =
-              div ~a:[a_class ["picture"]]
-                [img  ~alt:filename
-                    ~src:(Eliom_output.Html5.make_uri
-                            ~service:static_dir ["db";gallery_name;"thumbs";filename]) ()] in
-        loop (img :: acc)
-        else loop acc
+          let date = image_date ((abs_dir pic_dir) ^ "/" ^  filename) in
+          let is_date = prev_date <> date in
+          let uri = (Eliom_output.Html5.make_uri
+                       ~service:static_dir ["db";gallery_name;"thumbs";filename]) in
+          let img = 
+            div ~a:[a_class ["date_overlay"]] [p [pcdata date];
+                                               div ~a:[a_class ["picture"]]
+                                                 [img  ~alt:date
+                                                     ~src:(if is_date then "" else uri) ()]] in
+          loop date (img :: acc)
+        else loop prev_date acc
       with _ -> acc
     in
-    loop []
+    (* Unix.closedir dir; *)
+    loop "" []
+
 end
 
 {client{
@@ -230,7 +255,9 @@ let current_time = ref 0.0
 
     
     let divs = List.filter (fun el -> el ## className = js"picture") divs in
-    let _ = List.iter (fun el -> el ## style ## height <- (js"100%")) imgs in
+    let _ = List.iter (fun el -> 
+      el ## style ## height <- (js"100%");
+    ) imgs in
     List.iter wrap_element divs;
     for i = 0 to List.length divs - 1 do
       let x = i mod 7 in
@@ -244,13 +271,13 @@ let current_time = ref 0.0
       el ## style ## position <- js "absolute";
       el ## style ## zIndex <- js "1";
       el ## onmousedown <- Html.handler (fun ev ->
-        let pic = (Js.Unsafe.coerce imgsa.(i) : Dom_html.imageElement Js.t) ## src in
-        let pic = pic ## replace_string (js"/thumbs", js"/mini") in
+        let pic = (Js.Unsafe.coerce imgsa.(i) : Dom_html.imageElement Js.t) in
+        let pic = pic ## src ## replace_string (js"/thumbs", js"/mini") in
         previews.(section) ## src <- pic;
       Js._false);
 
     done;
-    Html.document ## body ## style ## backgroundColor <- js"#8f8f95";
+    (* Html.document ## body ## style ## backgroundColor <- js"#8f8f95"; *)
     Js._false
  
   let _ = Dom_html.window##onload <- (Dom_html.handler onload)
@@ -267,8 +294,9 @@ let ala =
               | Eliom_state.Data name ->
                 (List.map
                    (fun dirname ->
+                     let divs = Gallery.thumbnails dirname in
                      (div [div [h1 [pcdata dirname]];
-                           div (Gallery.thumbnails "2011")]))
+                           div divs]))
                    (Gallery.dirnames ()))
               | Eliom_state.Data_session_expired
               | Eliom_state.No_data -> [login_box ()]))

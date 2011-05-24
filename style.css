@@ -1,4 +1,10 @@
 body
 {
-    background-color:yellow;
+    background-color:#8f8f95;
+}
+div.date_overlay { 
+font-size:small;
+position:absolute;
+height:100%;
+left:0;
 }

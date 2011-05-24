@@ -5,7 +5,7 @@ APP_NAME := gallery
 
 ## Package required to build the server part of the application
 
-SERVER_PACKAGE := cairo
+SERVER_PACKAGE := cairo calendar
 
 ## Package to be linked in the client part
 
