@@ -5,6 +5,8 @@
 
   let width = 700
   let height = 400
+  let app_root_dir = "/home/spec/prog/worx/Current/gallery/"
+  let abs_dir rel = app_root_dir ^ rel
 }}
 
 module My_appl =
@@ -30,7 +32,7 @@ module My_appl =
 }}
 
 (* module Auth = struct *)
-  open Lwt
+open Lwt
 
 let my_table = Eliom_state.create_volatile_table ()
 
@@ -42,21 +44,21 @@ let connect_action =
     ()
 
 (* As the handler is very simple, we register it now: *)
-let disconnect_action =
-  Eliom_output.Action.register_post_coservice'
-    ~name:"disconnect"
-    ~post_params:Eliom_parameters.unit
-    (fun () () ->
-      Eliom_state.close_session ())
+(* let disconnect_action = *)
+(*   Eliom_output.Action.register_post_coservice' *)
+(*     ~name:"disconnect" *)
+(*     ~post_params:Eliom_parameters.unit *)
+(*     (fun () () -> *)
+(*       Eliom_state.close_session ()) *)
 
 
 (* -------------------------------------------------------- *)
 (* login ang logout boxes:                                  *)
 
-let disconnect_box s =
-  post_form ~service:disconnect_action
-    (fun _ -> [p [string_input
-                    ~input_type:`Submit ~value:s ()]]) ()
+(* let disconnect_box s = *)
+(*   post_form ~service:disconnect_action *)
+(*     (fun _ -> [p [string_input *)
+(*                     ~input_type:`Submit ~value:s ()]]) () *)
 
 let login_box =
   post_form ~service:connect_action
@@ -106,8 +108,12 @@ let connect_example_handler () () =
 module Gallery = struct
   open Lwt
       
-  let dirnames dirname =
-    let dir = Unix.opendir dirname in
+  let dirnames () =
+    let static_dir = Eliom_services.static_dir () in
+    let pic_dir = Eliom_output.Html5.make_string_uri ~service:static_dir ["db"] in
+    print_endline pic_dir;
+    flush stdout;
+    let dir = Unix.opendir (abs_dir pic_dir) in
     let rec loop () =
       try
         let name = Unix.readdir dir in
@@ -119,36 +125,23 @@ module Gallery = struct
     List.iter print_endline dirs;
     dirs
 
-  let thumbnails dirname =
-    let dir = Unix.opendir ("/home/danmey/repo/gallery/db/" ^ dirname ^ "/thumbs") in
-        let rec loop acc =
-          try
-            let filename = Unix.readdir dir in
-            let img =
+  let thumbnails gallery_name =
+    let static_dir = Eliom_services.static_dir () in
+    let pic_dir = Eliom_output.Html5.make_string_uri ~service:static_dir ["db";gallery_name;"thumbs";] in
+    let dir = Unix.opendir (abs_dir pic_dir) in
+    let rec loop acc =
+      try
+        let filename = Unix.readdir dir in
+        let img =
               div ~a:[a_class ["picture"]]
-              [img  ~alt:filename
-                ~src:(Eliom_output.Html5.make_uri
-                        ~service:(Eliom_services.static_dir ()) ["db";dirname;"thumbs";filename]) ()] in
-            loop (img :: acc)
-          with _ -> acc
-        in
-        loop []
+                [img  ~alt:filename
+                    ~src:(Eliom_output.Html5.make_uri
+                            ~service:static_dir ["db";gallery_name;"thumbs";filename]) ()] in
+        loop (img :: acc)
+      with _ -> acc
+    in
+    loop []
 end
-
-(* -------------------------------------------------------- *)
-(* Registration of main services:                           *)
-
-(* let () = *)
-(*   Auth.register () *)
-  (* Gallery.register () *)
-
-
-
-
-
- 
-
-
 
 {client{
 module Html = Dom_html
@@ -320,6 +313,6 @@ let ala =
                    (fun dirname ->
                      (div [div [h1 [pcdata dirname]];
                            div (Gallery.thumbnails "2011")]))
-                   (Gallery.dirnames "/home/danmey/repo/gallery/db"))
+                   (Gallery.dirnames ()))
               | Eliom_state.Data_session_expired
               | Eliom_state.No_data -> [login_box ()]))
