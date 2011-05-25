@@ -5,6 +5,7 @@
 *.MPG
 *.THM
 *.png
+*.date
 /.depend
 /_client/gallery
 /_server/gallery.o

@@ -9,7 +9,7 @@ height:100%;
 left:0;
 }
 div.picture_date {
-font-size:small;
+font-size:xsmall;
 font-family:Sans-serif;
 position:absolute;
 height:100%;
@@ -18,7 +18,9 @@ background-image: url("./star.png");
 background-repeat:no-repeat;
 background-position:center;
 background-color:black;
-color:#8f8f95;
+color:#ffffff;
 text-align: center;
+vertical-align: middle;
+font-weight:900;
 vertical-align: middle;
 }
