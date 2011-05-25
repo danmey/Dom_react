@@ -78,12 +78,20 @@ module Gallery = struct
 
 let image_date filename =
   let open CalendarLib in
-    let date_input = Unix.open_process_in (Printf.sprintf "jhead %s|grep \"Date/Time\" | sed -n 's/[^:]\\+: \\([^ ]\\+\\).*/\\1/p'" filename) in
-    let date = input_line date_input in
-    close_in date_input;
-    let date = Printer.Date.from_fstring "%Y:%m:%d" date in
-    Printer.Date.sprint "%d %B %Y (%A)" date
-      
+    (* let date_input = Unix.open_process_in (Printf.sprintf "jhead %s|grep \"Date/Time\" | sed -n 's/[^:]\\+: \\([^ ]\\+\\).*/\\1/p'" filename) in *)
+      print_endline (filename ^ ".date");
+      flush stdout;
+      try
+      let date_input = open_in (filename ^ ".date") in
+      let date = input_line date_input in
+      print_endline ("beta: " ^ filename ^ ".date");
+      flush stdout;
+      close_in date_input;
+      let date = Printer.Date.from_fstring "%Y:%m:%d" date in
+      Some date
+      with | End_of_file -> None
+        | Sys_error _ -> None
+
   let dirnames () =
     let static_dir = Eliom_services.static_dir () in
     let pic_dir = Eliom_output.Html5.make_string_uri ~service:static_dir ["db"] in
@@ -94,7 +102,7 @@ let image_date filename =
         if is_real_name filename then
           filename :: loop ()
         else loop ()
-      with _ -> []
+      with  _ -> []
     in
     let dirs = loop () in
     (* Unix.closedir dir; *)
@@ -105,25 +113,62 @@ let image_date filename =
     let static_dir = Eliom_services.static_dir () in
     let pic_dir = Eliom_output.Html5.make_string_uri ~service:static_dir ["db";gallery_name;"thumbs";] in
     let dir = Unix.opendir (abs_dir pic_dir) in
-    let rec loop prev_date acc =
+    let rec loop acc =
       try
         let filename = Unix.readdir dir in
         if is_real_name filename then
+           (if String.length filename > 5 then
+              (if Str.last_chars filename 5 <> ".date" then
+                  let date = image_date ((abs_dir pic_dir) ^ "/" ^  filename) in
+                  loop ((date, filename) :: acc)
+               else loop acc)
+            else
+               let date = image_date ((abs_dir pic_dir) ^ "/" ^  filename) in
+               loop ((date, filename) :: acc))
+        else loop acc
+      with Unix.Unix_error _ -> acc
+        | _ -> acc
+    in
+    (* Unix.closedir dir; *)
+    let imgs = loop [] in
+    let imgs = Array.of_list imgs in
+    Array.sort (fun (date, filename) (date2, filename) ->
+      match date, date2 with
+        | Some date, Some date2 ->
+          CalendarLib.Date.compare date date2
+        | None,None -> 1) imgs;
+    let imgs = Array.to_list imgs in
+    (snd (List.fold_left (fun ((stamped, prev_date), acc) (date,filename) ->
+      print_endline ("ala:" ^ filename ^ ".date");
+      flush stdout;
+
           let date = image_date ((abs_dir pic_dir) ^ "/" ^  filename) in
+          print_endline ("bela:" ^ filename ^ ".date");
+          flush stdout;
+          let date = match date with 
+              Some date -> CalendarLib.Printer.Date.sprint "%d %B %Y (%A)" date 
+            | None -> ""
+          in
           let is_date = prev_date <> date in
+          let is_date2 = is_date && (not stamped) in
+          let stamped = false in
           let uri = (Eliom_output.Html5.make_uri
                        ~service:static_dir ["db";gallery_name;"thumbs";filename]) in
-          let img = 
+          let img1 =
+            if is_date2 then
+            [div ~a:[a_class ["date_overlay"]] [p [pcdata date];
+                                               div ~a:[a_class ["picture_date"]]
+                                                 [img  ~alt:date
+                                                     ~src:"" ()]]]
+          else [] in
+          let img2 =
             div ~a:[a_class ["date_overlay"]] [p [pcdata date];
                                                div ~a:[a_class ["picture"]]
                                                  [img  ~alt:date
-                                                     ~src:(if is_date then "" else uri) ()]] in
-          loop date (img :: acc)
-        else loop prev_date acc
-      with _ -> acc
-    in
-    (* Unix.closedir dir; *)
-    loop "" []
+                                                     ~src:(uri) ()]] in
+          (stamped, date), (img1@[img2]@acc)
+    ) ((false, ""),[]) imgs))
+
 
 end
 
@@ -182,6 +227,7 @@ let current_time = ref 0.0
     event
   
   let rec wrap_element el =
+    (* if el ## className <> js"picture_date" then *)
     let duration = 0.6 in
     let f d = 0.-.cos (d /. duration *. 3.1415 *.2.) in
     let resize_div v =
@@ -254,7 +300,7 @@ let current_time = ref 0.0
       preview i pic) in
 
     
-    let divs = List.filter (fun el -> el ## className = js"picture") divs in
+    let divs = List.filter (fun el -> el ## className = js"picture" || el ## className = js"picture_date") divs in
     let _ = List.iter (fun el -> 
       el ## style ## height <- (js"100%");
     ) imgs in
