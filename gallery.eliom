@@ -136,7 +136,7 @@ let image_date filename =
       match date, date2 with
         | Some date, Some date2 ->
           CalendarLib.Date.compare date date2
-        | None,None -> 1) imgs;
+        | _,_ -> 1) imgs;
     let imgs = Array.to_list imgs in
     (snd (List.fold_left (fun ((stamped, prev_date), acc) (date,filename) ->
       print_endline ("ala:" ^ filename ^ ".date");
@@ -331,18 +331,33 @@ let current_time = ref 0.0
 let () =
     Eliom_output.Action.register ~service:connect_action connect_action_handler
 
+let main_service = Eliom_services.service ~path:[""] ~get_params:Eliom_parameters.unit ()
+
 let ala =
-  My_appl.register_service ~path:[""] ~get_params:Eliom_parameters.unit
+  My_appl.register ~service:main_service
     (fun () () ->
       let sessdat = Eliom_state.get_volatile_data ~table:my_table () in
           Lwt.return
             (match sessdat with
               | Eliom_state.Data name ->
-                (List.map
-                   (fun dirname ->
-                     let divs = Gallery.thumbnails dirname in
-                     (div [div [h1 [pcdata dirname]];
-                           div divs]))
-                   (Gallery.dirnames ()))
+                let galleries =
+                  let register_gallery gallery_name =
+                    My_appl.register_service
+                      ~path:["show"] ~get_params:Eliom_parameters.unit 
+                      (fun () () ->
+                        let sessdat = Eliom_state.get_volatile_data ~table:my_table () in
+                        Lwt.return
+                          (match sessdat with
+                            | Eliom_state.Data name ->
+                              let divs = Gallery.thumbnails gallery_name in
+                              [div [div [h1 [pcdata gallery_name]];
+                                    div divs]]
+                            | Eliom_state.Data_session_expired
+                            | Eliom_state.No_data -> [login_box ()])) in
+                  List.map (fun dirname -> dirname, register_gallery dirname) (Gallery.dirnames()) in
+
+                [p (List.map
+                      (fun (gallery, service) ->
+                        (a ~service [pcdata gallery]())) galleries)]
               | Eliom_state.Data_session_expired
               | Eliom_state.No_data -> [login_box ()]))
