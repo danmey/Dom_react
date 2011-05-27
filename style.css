@@ -8,6 +8,10 @@ position:absolute;
 height:100%;
 left:0;
 }
+div {
+    z-index:100;
+
+}
 div.picture_date {
 font-size:xsmall;
 font-family:Sans-serif;

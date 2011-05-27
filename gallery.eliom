@@ -192,7 +192,7 @@ let current_time = ref 0.0
       else acc in
     loop 0 []
 
-  let div el ~size =
+  let div el ~size ~topmost =
     let prev_w = el ## clientWidth in
     let prev_h = el ## clientHeight in
     let top = el ## offsetTop in
@@ -206,7 +206,7 @@ let current_time = ref 0.0
     el ## style ## height <- js size;
     el ## style ## top <- top;
     el ## style ## left <- left;
-    el
+    el ## style ## zIndex <-  if topmost then js"100" else js"10"
 
   open React
 
@@ -227,13 +227,15 @@ let current_time = ref 0.0
     event
   
   let rec wrap_element el =
-    (* if el ## className <> js"picture_date" then *)
+    if el ## className = js"picture_date" then
+      ignore (div el ~size:80 ~topmost:false) else
+      begin
     let duration = 0.6 in
     let f d = 0.-.cos (d /. duration *. 3.1415 *.2.) in
     let resize_div v =
       let v = f v in
       let size = 80.0 +. 60.0 *. ((v +. 1.0) *. 0.5) in
-      ignore(div el ~size:(int_of_float size));
+      ignore(div el ~size:(int_of_float size) ~topmost:(not (int_of_float size = 80)) );
       () 
     in
     let send, mouse_over = onmousemove el in
@@ -253,6 +255,7 @@ let current_time = ref 0.0
     (* this a nasty work around *)
     send (~-.duration);
     ()
+      end
 
   let onload ev =
 
