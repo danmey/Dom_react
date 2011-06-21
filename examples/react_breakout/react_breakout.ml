@@ -14,14 +14,17 @@ module Js_helper = struct
     let open Js in
     let open Dom_html in
     let js = string in
-    let get_opt el = Opt.case el (fun () -> failwith "context") in
-    lazy (get_opt (document ## getElementById(js"canvas")) (fun canvas ->
-      let canvas = ((Unsafe.coerce canvas) :> canvasElement Js.t) in
-      canvas ## getContext (_2d_)))
+    let get_opt el = 
+      Opt.case el (fun () -> failwith "context") in
+      lazy 
+        (let canvas = document ## getElementById(js"canvas") in
+         get_opt canvas 
+           (fun canvas ->
+             let canvas = ((Unsafe.coerce canvas) :> canvasElement Js.t) in
+             canvas ## getContext (_2d_)))
       
   let with_context f = f (Lazy.force context)
 end
-         
 
 module V2 : sig                                                  (* Vectors. *)
   type t
@@ -97,12 +100,13 @@ end = struct
 
   let flush () = ()
   let init () = ()
+  
   let text ?(center = true) ?(color = 30) pos str =
     Js_helper.with_context (fun ctx ->
       let x,y = V2.x pos, V2.y pos in
       let x,y = x *. 7., y *. 15. in
       let str = Js.string str in
-      ctx ## font <- Js.string "15px monospace";
+      ctx ## font <- Js.string"15px monospace";
       ctx ## fillText (str, x, y))
     
   let rect ?(color = 40) r =
@@ -425,7 +429,6 @@ end
 
 let main () = 
   Random.self_init ();
-  (* Log.init (); *)
   Draw.init ();
   Input.init ();
   let ui = Ui.init () in                                  
