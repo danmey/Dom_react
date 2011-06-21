@@ -8,9 +8,20 @@
 (* Breakout clone. *)
 
 open React;;
-module Html = Dom_html
-module Dom = Dom
-let js = Js.string
+
+module Js_helper = struct
+  let context =
+    let open Js in
+    let open Dom_html in
+    let js = string in
+    let get_opt el = Opt.case el (fun () -> failwith "context") in
+    lazy (get_opt (document ## getElementById(js"canvas")) (fun canvas ->
+      let canvas = ((Unsafe.coerce canvas) :> canvasElement Js.t) in
+      canvas ## getContext (_2d_)))
+      
+  let with_context f = f (Lazy.force context)
+end
+         
 
 module V2 : sig                                                  (* Vectors. *)
   type t
@@ -73,35 +84,33 @@ module Draw : sig                        (* Draw with ANSI escape sequences. *)
   val rect : ?color:int -> Rect.t -> unit
   val beep : unit -> unit
 end = struct
-  let with_context f = Js.Opt.case (Html.document ## getElementById(js"canvas")) (fun () -> ())
-    (fun canvas ->
-        let canvas = ((Js.Unsafe.coerce canvas) :> Dom_html.canvasElement Js.t) in
-        let ctx = canvas ## getContext (Dom_html._2d_) in
-        f ctx)
   let r4 r =
     let o = Rect.o r in
     let s = Rect.size r in
     (V2.x o, V2.y o, V2.x s, V2.y s)
 
   let frame = Rect.create (V2.v 1. 1.) (V2.v 80. 24.)
+
   let clear () =
-    with_context (fun ctx ->
-      ctx ## clearRect (0.,0., 1280., 800.))
+    Js_helper.with_context 
+      (fun ctx -> ctx ## clearRect (0.,0., 1280., 800.))
+
   let flush () = ()
   let init () = ()
   let text ?(center = true) ?(color = 30) pos str =
-    with_context (fun ctx ->
+    Js_helper.with_context (fun ctx ->
       let x,y = V2.x pos, V2.y pos in
-      let x,y = x *. 10., y *. 10. in
-      let str = js str in
-      ctx ## fillText (str,x,y))
+      let x,y = x *. 7., y *. 15. in
+      let str = Js.string str in
+      ctx ## font <- Js.string "15px monospace";
+      ctx ## fillText (str, x, y))
     
   let rect ?(color = 40) r =
-    with_context (fun ctx ->
+    Js_helper.with_context (fun ctx ->
       let x,y,sx,sy = r4 r in
-      let x,y,sx,sy = x *. 10., y *. 20., sx *. 10., sy *. 10. in
-      ctx ## fillStyle <- js"rgb(200,0,0)";
-      ctx ## fillRect (x,y,sx,sy))
+      let x,y,sx,sy = x *. 10., y *. 15., sx *. 10., sy *. 15. in
+      ctx ## fillStyle <- Js.string"rgb(200,0,0)";
+      ctx ## fillRect (x, y, sx, sy))
 
   let beep () = ()
 end
@@ -116,15 +125,13 @@ end = struct
   let key, send_key = E.create ()
   let gather () = ()
   let init () =
-    Js.Opt.case (Html.document ## getElementById(js"canvas")) (fun () -> ())
-      (fun canvas ->
-        Html.document ## onkeypress <- Html.handler 
-          (fun ev ->
-            Js.Optdef.case (ev ## charCode) 
-              (fun () -> ()) 
-              (fun code ->
-                send_key (char_of_int code));
-            Js._false));
+    Dom_html.document ## onkeypress <- Dom_html.handler 
+      (fun ev ->
+        Js.Optdef.case (ev ## charCode) 
+          (fun () -> ()) 
+          (fun code ->
+            send_key (char_of_int code));
+        Js._false)
 
 end
 
@@ -425,7 +432,12 @@ let main () =
   Input.gather ();
   ui
 
-(* let ui = main ()                               (\* keep a ref. to avoid g.c. *\) *)
+let onload ev =
+  let ui = main () in
+  Js._false
+;;
+
+Dom_html.window##onload <- (Dom_html.handler onload)
 
 (*----------------------------------------------------------------------------
   Copyright (c) 2009-2010, Daniel C. Bünzli
@@ -459,43 +471,5 @@ let main () =
   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   ---------------------------------------------------------------------------*)
-
-
-(* module Rd = React_dom *)
-(* module R = Lwt_react *)
-
-(* open Rd.S *)
-(* open React_dom.S.Css *)
-(* open React.S.Float *)
-(* open React.S.Pair *)
-(* open React *)
-
-let draw () =
-  Js.Opt.case (Html.document ## getElementById(js"canvas")) (fun () -> ())
-    (fun canvas ->
-      let canvas = ((Js.Unsafe.coerce canvas) :> Dom_html.canvasElement Js.t) in
-      let ctx = canvas ## getContext (Dom_html._2d_) in
-      ctx ## fillStyle <- js"rgb(200,0,0)";
-      ctx ## fillRect (10., 10., 55., 50.);
-      ctx ## fillStyle <- js"rgba(0, 0, 200, 0.5)";
-      ctx ## fillRect (30., 30., 1., 50.))
-
-let onload ev =
-  (* draw (); *)
-  let ui = main () in
-
-  (* let time = time() in *)
-  (* let mouse = mousef () in *)
-  (* let e = element ~position:mouse () in *)
-  (* let f = element ~width:(S.const 400.) () in *)
-  (* let wiggle = (sin time  +. S.const 1.0) *. S.const 0.5 in *)
-  (* let ( <* ) = ($) in *)
-  (* let css e s = e --> s in *)
-  (* let l = e --> `left >> (`left <-- f <* Rd.delay 250.) in *)
-  (* let l = css e `left >> (`left <-- f <* Rd.delay 215.) in *)
-  (* let l = wiggle >> (`opacity <-- f) in *)
-  Js._false
-;;
-Html.window##onload <- (Html.handler onload)
   
   
