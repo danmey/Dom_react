@@ -18,8 +18,8 @@ let onload ev =
   let wiggle = (sin time  +. S.const 1.0) *. S.const 0.5 in
   let ( <* ) = ($) in
   let css e s = e --> s in
-  let l = e --> `left >> (`left <-- f <* Rd.delay 50.) in
-  let l = css e `left >> (`left <-- f <* Rd.delay 50.) in
+  let l = e --> `left >> (`left <-- f <* Rd.delay 250.) in
+  let l = css e `left >> (`left <-- f <* Rd.delay 215.) in
   let l = wiggle >> (`opacity <-- f) in
   Js._false
 ;;
