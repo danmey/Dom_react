@@ -1,6 +1,13 @@
-_client
-.depend
+*.jpg
+*.byte
 *.cm*
 *.js
-*.byte
-*.annot
+*.MPG
+*.THM
+*.png
+*.date
+.depend
+_client
+_server
+*.a
+gallery.type_mli
