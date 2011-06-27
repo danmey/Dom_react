@@ -6,9 +6,8 @@
 *.THM
 *.png
 *.date
-/.depend
-/_client/gallery
-/_server/gallery.o
-/gallery.a
-/react-dom.ml
-/gallery.type_mli
+.depend
+_client
+_server
+*.a
+gallery.type_mli
