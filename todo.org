@@ -1,0 +1,9 @@
+* send Start
+* Diff with previous if < duration
+** yes: Progress
+** No: Start
+* check with previous if Waiting
+** yes: Some Start
+** Progress, None
+** Start -> Some Start
+* Map 
