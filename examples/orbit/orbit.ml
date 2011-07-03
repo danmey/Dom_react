@@ -15,13 +15,13 @@ let onload _ =
     (fun canvas ->
       let canvas = ((Js.Unsafe.coerce canvas) : Dom_html.canvasElement Js.t) in
       let ctx = canvas  ##getContext (Dom_html._2d_) in
-      React_dom.int_value "balls" >>= (fun balls ->
-      React_dom.int_value "red" >>= (fun red ->
-      React_dom.int_value "blue" >>= (fun blue ->
-      React_dom.float_value "radius" >>= (fun radius ->
-      React_dom.float_value "speed" >>= (fun speed ->
-        let mouse = React_dom.mouse () in
-        let ticks,_ = React_dom.ticks 0.05 in
+      Dom_react.int_value "balls" >>= (fun balls ->
+      Dom_react.int_value "red" >>= (fun red ->
+      Dom_react.int_value "blue" >>= (fun blue ->
+      Dom_react.float_value "radius" >>= (fun radius ->
+      Dom_react.float_value "speed" >>= (fun speed ->
+        let mouse = Dom_react.mouse () in
+        let ticks,_ = Dom_react.ticks 0.05 in
         let phase =
           S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed in
         let shapes =

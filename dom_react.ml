@@ -1,5 +1,4 @@
-open Lwt_react
-open Dom_html
+open React
 
 let input_value value (element : inputElement Js.t) =
   let event, send_event = S.create value in

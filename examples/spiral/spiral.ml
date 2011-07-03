@@ -1,11 +1,11 @@
 module Html = Dom_html
 module Dom = Dom
-module Rd = React_dom
+module Rd = Dom_react
 module R = Lwt_react
 
 let js = Js.string
 open Rd.S
-open React_dom.S.Css
+open Dom_react.S.Css
 open React.S.Float
 open React.S.Pair
 open React

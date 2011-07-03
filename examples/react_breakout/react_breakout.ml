@@ -3,7 +3,7 @@
    Distributed under a BSD license, see license at the end of the file.
   ---------------------------------------------------------------------------*)
 
-(* Adopted to React_dom by Wojciech Meyer *)
+(* Adopted to Dom_react by Wojciech Meyer *)
 
 (* Breakout clone. *)
 
@@ -125,7 +125,7 @@ module Input : sig                              (* Keyboard and time events. *)
   val key : char event                                    (* keyboard event. *)
   val gather : unit -> unit
 end = struct
-  let time = (S.changes (React_dom.S.time ()))
+  let time = (S.changes (Dom_react.S.time ()))
   let key, send_key = E.create ()
   let gather () = ()
   let init () =
