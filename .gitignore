@@ -11,5 +11,3 @@ _client
 _server
 *.a
 *.annot
-gallery.type_mli
-/dom_react.mli
