@@ -1,9 +1,10 @@
 let js = Js.string
 
+open Dom_react
 let onload ev =
   let (>>=) = Js.Opt.bind in
-  let select, attacher = Dom_react.Dom_html2.createSelect Dom_html.document in
-  let ev = attacher (`Onchange, Dom_react.EventType.int) in
+  let select, attacher = Dom_html_react.createSelect Dom_html.document in
+  let ev = attacher (`Onchange, Event_type.int) in
   (Dom_html.document##getElementById (js"body") >>=
      (fun body ->
        Dom.appendChild body (select :> Dom.node Js.t);

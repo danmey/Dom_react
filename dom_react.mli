@@ -1,7 +1,7 @@
 (*------------------------------------------------------------------------------
     This file is part of Dom_react.
 
-    Foobar is free software: you can redistribute it and/or modify
+    Dom_react is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
@@ -22,7 +22,7 @@
 
 open Js
 
-module EventType : sig
+module Event_type : sig
   type event_data
 
   type event_type =
@@ -51,15 +51,23 @@ end
 
 open Dom_html
 (** {2 {Subset of DOM elements} *)
-module Dom_html2 : sig
-  open EventType
+module Dom_html_react : sig
+  open Event_type
   (* val createOption : document t -> optionElement t *)
-  val createSelect :
+  val createSelect : 
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.selectElement Js.t *
       ([< `Onchange ] * ([> `Int of int ] -> 'a option) -> 'a React.event)
+
+  val createInput : 
+    ?_type:Js.js_string Js.t ->
+    ?name:Js.js_string Js.t ->
+    Dom_html.document Js.t ->
+    Dom_html.inputElement Js.t *
+      ([< `Onchange ] * ([> `String of string ] -> 'a option) -> 'a React.event)
+
   (* val createInput : *)
   (*   ?_type:js_string t -> ?name:js_string t -> document t -> inputElement t *)
   (* val createTextarea : *)
@@ -69,4 +77,5 @@ module Dom_html2 : sig
   (* val createDiv : document t -> divElement t *)
   (* val createQ : document t -> quoteElement t *)
   (* val createImg : document t -> imageElement t *)
+
 end
