@@ -1,18 +1,18 @@
 (*------------------------------------------------------------------------------
-    This file is part of Dom_react.
+  This file is part of Dom_react.
 
-    Dom_react is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+  Dom_react is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-    Foobar is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+  Foobar is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU Lesser General Public License
+  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
   ----------------------------------------------------------------------------*)
 
 
@@ -23,8 +23,6 @@
 open Js
 
 module Event_type : sig
-  type event_data
-
   type event_type =
     [ `Onclick 
     | `Ondblclick 
@@ -39,43 +37,120 @@ module Event_type : sig
     | `Onselect
     | `Onchange ]
 
-  type ('a, 'b) event_map = (event_data * 'a) React.E.t -> ('a * 'b) React.E.t
+  (* type ('a, 'b) event_map = (event_data * 'a) React.E.t -> ('a * 'b) React.E.t *)
+  (* type ('a, 'b) event_attacher = event_type * ('a, 'b) event_map -> ('a * 'b) React.E.t *)
 
-  val vec2 : [> `Vec2 of 'a * 'b ] -> ('a * 'b) option
-  val int : [> `Int of 'a ] -> 'a option
-  (* val float : ('a, float) event_map *)
-  (* val string : ('a, string) event_map *)
+  val vec2   : [> `Vec2 of int * int ] -> (int * int) option
+  val int    : [> `Int of int ]            -> int option
+  val float  : [> `Float of float ]        -> float option
+  val string : [> `String of string ]      -> string option
 
-  type ('a, 'b) event_attacher = event_type * ('a, 'b) event_map -> ('a * 'b) React.E.t
 end      
 
 open Dom_html
 (** {2 {Subset of DOM elements} *)
 module Dom_html_react : sig
   open Event_type
-  (* val createOption : document t -> optionElement t *)
-  val createSelect : 
+   (* Factor out types to aliases *)
+  val createSelect :
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.selectElement Js.t *
-      ([< `Onchange ] * ([> `Int of int ] -> 'a option) -> 'a React.event)
+      ([<        | `Onclick
+       | `Ondblclick
+       | `Onkeydown
+       | `Onkeypress
+       | `Onkeyup
+       | `Onmousedown
+       | `Onmousemove
+       | `Onmouseout
+       | `Onmouseover
+       | `Onmouseup
+       ] *
+          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
+       'a React.event)
 
-  val createInput : 
+  val createInput :
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.inputElement Js.t *
-      ([< `Onchange ] * ([> `String of string ] -> 'a option) -> 'a React.event)
-
-  (* val createInput : *)
-  (*   ?_type:js_string t -> ?name:js_string t -> document t -> inputElement t *)
-  (* val createTextarea : *)
-  (*   ?_type:js_string t -> ?name:js_string t -> document t -> textAreaElement t *)
-  (* val createButton : *)
-  (*   ?_type:js_string t -> ?name:js_string t -> document t -> buttonElement t *)
-  (* val createDiv : document t -> divElement t *)
-  (* val createQ : document t -> quoteElement t *)
-  (* val createImg : document t -> imageElement t *)
+      ([< `Onclick
+       | `Ondblclick
+       | `Onkeydown
+       | `Onkeypress
+       | `Onkeyup
+       | `Onmousedown
+       | `Onmousemove
+       | `Onmouseout
+       | `Onmouseover
+       | `Onmouseup ] *
+          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
+       'a React.event)
+  val createTextarea :
+    ?_type:Js.js_string Js.t ->
+    ?name:Js.js_string Js.t ->
+    Dom_html.document Js.t ->
+    Dom_html.textAreaElement Js.t *
+      ([< `Onclick
+       | `Ondblclick
+       | `Onkeydown
+       | `Onkeypress
+       | `Onkeyup
+       | `Onmousedown
+       | `Onmousemove
+       | `Onmouseout
+       | `Onmouseover
+       | `Onmouseup ] *
+          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
+       'a React.event)
+  val createButton :
+    ?_type:Js.js_string Js.t ->
+    ?name:Js.js_string Js.t ->
+    Dom_html.document Js.t ->
+    Dom_html.buttonElement Js.t *
+      ([< `Onclick
+       | `Ondblclick
+       | `Onkeydown
+       | `Onkeypress
+       | `Onkeyup
+       | `Onmousedown
+       | `Onmousemove
+       | `Onmouseout
+       | `Onmouseover
+       | `Onmouseup ] *
+          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
+       'a React.event)
+  val createDiv :
+    Dom_html.document Js.t ->
+    Dom_html.divElement Js.t *
+      ([< `Onclick
+       | `Ondblclick
+       | `Onkeydown
+       | `Onkeypress
+       | `Onkeyup
+       | `Onmousedown
+       | `Onmousemove
+       | `Onmouseout
+       | `Onmouseover
+       | `Onmouseup ] *
+          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
+       'a React.event)
+  val createImg :
+    Dom_html.document Js.t ->
+    Dom_html.imageElement Js.t *
+      ([< `Onclick
+       | `Ondblclick
+       | `Onkeydown
+       | `Onkeypress
+       | `Onkeyup
+       | `Onmousedown
+       | `Onmousemove
+       | `Onmouseout
+       | `Onmouseover
+       | `Onmouseup ] *
+          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
+       'a React.event)
 
 end
