@@ -1,0 +1,8 @@
+#!/bin/sh
+JS_OF_OCAML_PREFIX=`ocamlfind query js_of_ocaml`
+APP=react_event
+
+ocamlfind ocamlc -dtypes -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -g  -I ../../ -c  ../../dom_react.mli  ../../dom_react.ml  &&\
+ocamlfind ocamlc -I ../../ -dtypes -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -I ../.. -c ${APP}.ml &&\
+ocamlfind ocamlc -dtypes -package lwt -package lwt.react -pp "camlp4o ${JS_OF_OCAML_PREFIX}/pa_js.cmo" -I ${JS_OF_OCAML_PREFIX} -I ../.. -g -linkpkg -o ${APP}.byte js_of_ocaml.cma dom_react.cmo ${APP}.cmo &&\
+js_of_ocaml -noruntime ${JS_OF_OCAML_PREFIX}/runtime/runtime.js ${JS_OF_OCAML_PREFIX}/runtime/weak.js ${APP}.byte 
