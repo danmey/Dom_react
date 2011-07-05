@@ -28,6 +28,18 @@ end
 
 module Dom_html_react = struct
 
+  type common_event_type =
+    [ `Onclick
+    | `Ondblclick
+    | `Onkeydown
+    | `Onkeypress
+    | `Onkeyup
+    | `Onmousedown
+    | `Onmousemove
+    | `Onmouseout
+    | `Onmouseover
+    | `Onmouseup ]
+
   (* Monster! could be factored out *)
   let basic_event_prim w send = function
     | `Onclick ->

@@ -22,6 +22,7 @@
 
 open Js
 
+
 module Event_type : sig
   type event_type =
     [ `Onclick 
@@ -41,116 +42,65 @@ module Event_type : sig
   (* type ('a, 'b) event_attacher = event_type * ('a, 'b) event_map -> ('a * 'b) React.E.t *)
 
   val vec2   : [> `Vec2 of int * int ] -> (int * int) option
-  val int    : [> `Int of int ]            -> int option
-  val float  : [> `Float of float ]        -> float option
-  val string : [> `String of string ]      -> string option
+  val int    : [> `Int of int ]        -> int option
+  val float  : [> `Float of float ]    -> float option
+  val string : [> `String of string ]  -> string option
 
 end      
 
-open Dom_html
+
 (** {2 {Subset of DOM elements} *)
 module Dom_html_react : sig
   open Event_type
-   (* Factor out types to aliases *)
+    
+  type common_event_type =
+    [ `Onclick
+    | `Ondblclick
+    | `Onkeydown
+    | `Onkeypress
+    | `Onkeyup
+    | `Onmousedown
+    | `Onmousemove
+    | `Onmouseout
+    | `Onmouseover
+    | `Onmouseup ]
+
   val createSelect :
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.selectElement Js.t *
-      ([<        | `Onclick
-       | `Ondblclick
-       | `Onkeydown
-       | `Onkeypress
-       | `Onkeyup
-       | `Onmousedown
-       | `Onmousemove
-       | `Onmouseout
-       | `Onmouseover
-       | `Onmouseup
-       ] *
-          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
-       'a React.event)
+      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
   val createInput :
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.inputElement Js.t *
-      ([< `Onclick
-       | `Ondblclick
-       | `Onkeydown
-       | `Onkeypress
-       | `Onkeyup
-       | `Onmousedown
-       | `Onmousemove
-       | `Onmouseout
-       | `Onmouseover
-       | `Onmouseup ] *
-          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
-       'a React.event)
+      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+
   val createTextarea :
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.textAreaElement Js.t *
-      ([< `Onclick
-       | `Ondblclick
-       | `Onkeydown
-       | `Onkeypress
-       | `Onkeyup
-       | `Onmousedown
-       | `Onmousemove
-       | `Onmouseout
-       | `Onmouseover
-       | `Onmouseup ] *
-          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
-       'a React.event)
+      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+
   val createButton :
     ?_type:Js.js_string Js.t ->
     ?name:Js.js_string Js.t ->
     Dom_html.document Js.t ->
     Dom_html.buttonElement Js.t *
-      ([< `Onclick
-       | `Ondblclick
-       | `Onkeydown
-       | `Onkeypress
-       | `Onkeyup
-       | `Onmousedown
-       | `Onmousemove
-       | `Onmouseout
-       | `Onmouseover
-       | `Onmouseup ] *
-          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
-       'a React.event)
+      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+
   val createDiv :
     Dom_html.document Js.t ->
     Dom_html.divElement Js.t *
-      ([< `Onclick
-       | `Ondblclick
-       | `Onkeydown
-       | `Onkeypress
-       | `Onkeyup
-       | `Onmousedown
-       | `Onmousemove
-       | `Onmouseout
-       | `Onmouseover
-       | `Onmouseup ] *
-          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
-       'a React.event)
+      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+
   val createImg :
     Dom_html.document Js.t ->
     Dom_html.imageElement Js.t *
-      ([< `Onclick
-       | `Ondblclick
-       | `Onkeydown
-       | `Onkeypress
-       | `Onkeyup
-       | `Onmousedown
-       | `Onmousemove
-       | `Onmouseout
-       | `Onmouseover
-       | `Onmouseup ] *
-          ([> `Int of int | `Vec2 of int * int ] -> 'a option) ->
-       'a React.event)
+      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
 end
