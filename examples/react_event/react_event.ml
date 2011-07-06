@@ -1,12 +1,13 @@
 let js = Js.string
 
 open Dom_react
+open React
 let onload ev =
   let (>>=) = Js.Opt.bind in
   (Dom_html.document##getElementById (js"body") >>=
      (fun body ->
        let button name =
-         let w, a = Dom_html_react.E.createButton Dom_html.document in
+         let w, a = Dom_html_react.Prim.E.createButton Dom_html.document in
          let ev = a (`Onclick, Event_type.int) in
          w##innerHTML <- js name;
          Dom.appendChild body (w :> Dom.node Js.t);

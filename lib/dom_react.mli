@@ -51,7 +51,8 @@ end
 module Dom_html_react : sig
   open Event_type
     
-  module E : sig
+  module Prim : sig
+    module E : sig
     type common_event_source =
       [ `Onclick
       | `Ondblclick
@@ -102,31 +103,31 @@ module Dom_html_react : sig
       Dom_html.imageElement Js.t *
         (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
   end
-  (* module S : sig *)
-  (*   type common_signal_source = *)
-  (*       [ `Id *)
-  (*       | `Title *)
-  (*       | `Lang *)
-  (*       | `Dir *)
-  (*       | `ClassName *)
-  (*       | `Style *)
-  (*       | `InnerHTML *)
-  (*       | `ClientLeft *)
-  (*       | `ClientTop *)
-  (*       | `ClientWidth *)
-  (*       | `ClientHeight *)
-  (*       | `OffsetLeft *)
-  (*       | `OffsetTop *)
-  (*       | `OffsetParent *)
-  (*       | `OffsetWidth *)
-  (*       | `offsetHeight *)
-  (*       | `ScrollLeft *)
-  (*       | `ScrollTop *)
-  (*       | `ScrollWidth *)
-  (*       | `ScrollHeight ] *)
-
-  (*   type 'a update_func = ('a -> unit) -> unit *)
-  (*   val createSelect : *)
+  module S : sig
+    type common_signal_source =
+        [ `Id
+        | `Title
+        | `Lang
+        | `Dir
+        | `ClassName
+        | `Style
+        | `InnerHTML
+        | `ClientLeft
+        | `ClientTop
+        | `ClientWidth
+        | `ClientHeight
+        | `OffsetLeft
+        | `OffsetTop
+        | `OffsetParent
+        | `OffsetWidth
+        | `offsetHeight
+        | `ScrollLeft
+        | `ScrollTop
+        | `ScrollWidth
+        | `ScrollHeight ]
+    
+    (* type 'a update_func = ('a -> unit) -> unit *)
+(*   val createSelect : *)
   (*     ?_type:Js.js_string Js.t -> *)
   (*     ?name:Js.js_string Js.t -> *)
   (*     Dom_html.document Js.t -> *)
@@ -163,6 +164,6 @@ module Dom_html_react : sig
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.imageElement Js.t * *)
   (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
-
-  (* end *)
+  end
+  end
 end
