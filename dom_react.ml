@@ -28,7 +28,8 @@ end
 
 module Dom_html_react = struct
 
-  type common_event_type =
+  module E = struct
+  type common_event_source =
     [ `Onclick
     | `Ondblclick
     | `Onkeydown
@@ -124,4 +125,5 @@ module Dom_html_react = struct
     install_react (Dom_html.createDiv doc)
   let createImg     doc =
     install_react (Dom_html.createImg doc)
+  end
 end

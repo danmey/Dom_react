@@ -6,7 +6,7 @@ let onload ev =
   (Dom_html.document##getElementById (js"body") >>=
      (fun body ->
        let button name =
-         let w, a = Dom_html_react.createButton Dom_html.document in
+         let w, a = Dom_html_react.E.createButton Dom_html.document in
          let ev = a (`Onclick, Event_type.int) in
          w##innerHTML <- js name;
          Dom.appendChild body (w :> Dom.node Js.t);

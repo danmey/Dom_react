@@ -38,9 +38,6 @@ module Event_type : sig
     | `Onselect
     | `Onchange ]
 
-  (* type ('a, 'b) event_map = (event_data * 'a) React.E.t -> ('a * 'b) React.E.t *)
-  (* type ('a, 'b) event_attacher = event_type * ('a, 'b) event_map -> ('a * 'b) React.E.t *)
-
   val vec2   : [> `Vec2 of int * int ] -> (int * int) option
   val int    : [> `Int of int ]        -> int option
   val float  : [> `Float of float ]    -> float option
@@ -53,54 +50,117 @@ end
 module Dom_html_react : sig
   open Event_type
     
-  type common_event_type =
-    [ `Onclick
-    | `Ondblclick
-    | `Onkeydown
-    | `Onkeypress
-    | `Onkeyup
-    | `Onmousedown
-    | `Onmousemove
-    | `Onmouseout
-    | `Onmouseover
-    | `Onmouseup ]
+  module E : sig
+    type common_event_source =
+      [ `Onclick
+      | `Ondblclick
+      | `Onkeydown
+      | `Onkeypress
+      | `Onkeyup
+      | `Onmousedown
+      | `Onmousemove
+      | `Onmouseout
+      | `Onmouseover
+      | `Onmouseup ]
 
-  val createSelect :
-    ?_type:Js.js_string Js.t ->
-    ?name:Js.js_string Js.t ->
-    Dom_html.document Js.t ->
-    Dom_html.selectElement Js.t *
-      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+    val createSelect :
+      ?_type:Js.js_string Js.t ->
+      ?name:Js.js_string Js.t ->
+      Dom_html.document Js.t ->
+      Dom_html.selectElement Js.t *
+        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
-  val createInput :
-    ?_type:Js.js_string Js.t ->
-    ?name:Js.js_string Js.t ->
-    Dom_html.document Js.t ->
-    Dom_html.inputElement Js.t *
-      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+    val createInput :
+      ?_type:Js.js_string Js.t ->
+      ?name:Js.js_string Js.t ->
+      Dom_html.document Js.t ->
+      Dom_html.inputElement Js.t *
+        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
-  val createTextarea :
-    ?_type:Js.js_string Js.t ->
-    ?name:Js.js_string Js.t ->
-    Dom_html.document Js.t ->
-    Dom_html.textAreaElement Js.t *
-      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+    val createTextarea :
+      ?_type:Js.js_string Js.t ->
+      ?name:Js.js_string Js.t ->
+      Dom_html.document Js.t ->
+      Dom_html.textAreaElement Js.t *
+        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
-  val createButton :
-    ?_type:Js.js_string Js.t ->
-    ?name:Js.js_string Js.t ->
-    Dom_html.document Js.t ->
-    Dom_html.buttonElement Js.t *
-      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+    val createButton :
+      ?_type:Js.js_string Js.t ->
+      ?name:Js.js_string Js.t ->
+      Dom_html.document Js.t ->
+      Dom_html.buttonElement Js.t *
+        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
-  val createDiv :
-    Dom_html.document Js.t ->
-    Dom_html.divElement Js.t *
-      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+    val createDiv :
+      Dom_html.document Js.t ->
+      Dom_html.divElement Js.t *
+        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
 
-  val createImg :
-    Dom_html.document Js.t ->
-    Dom_html.imageElement Js.t *
-      (common_event_type * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+    val createImg :
+      Dom_html.document Js.t ->
+      Dom_html.imageElement Js.t *
+        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event)
+  end
+  (* module S : sig *)
+  (*   type common_signal_source = *)
+  (*       [ `Id *)
+  (*       | `Title *)
+  (*       | `Lang *)
+  (*       | `Dir *)
+  (*       | `ClassName *)
+  (*       | `Style *)
+  (*       | `InnerHTML *)
+  (*       | `ClientLeft *)
+  (*       | `ClientTop *)
+  (*       | `ClientWidth *)
+  (*       | `ClientHeight *)
+  (*       | `OffsetLeft *)
+  (*       | `OffsetTop *)
+  (*       | `OffsetParent *)
+  (*       | `OffsetWidth *)
+  (*       | `offsetHeight *)
+  (*       | `ScrollLeft *)
+  (*       | `ScrollTop *)
+  (*       | `ScrollWidth *)
+  (*       | `ScrollHeight ] *)
 
+  (*   val createSelect : *)
+  (*     ?_type:Js.js_string Js.t -> *)
+  (*     ?name:Js.js_string Js.t -> *)
+  (*     Dom_html.document Js.t -> *)
+  (*     Dom_html.selectElement Js.t * *)
+  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+
+  (*   val createInput : *)
+  (*     ?_type:Js.js_string Js.t -> *)
+  (*     ?name:Js.js_string Js.t -> *)
+  (*     Dom_html.document Js.t -> *)
+  (*     Dom_html.inputElement Js.t * *)
+  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+
+  (*   val createTextarea : *)
+  (*     ?_type:Js.js_string Js.t -> *)
+  (*     ?name:Js.js_string Js.t -> *)
+  (*     Dom_html.document Js.t -> *)
+  (*     Dom_html.textAreaElement Js.t * *)
+  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+
+  (*   val createButton : *)
+  (*     ?_type:Js.js_string Js.t -> *)
+  (*     ?name:Js.js_string Js.t -> *)
+  (*     Dom_html.document Js.t -> *)
+  (*     Dom_html.buttonElement Js.t * *)
+  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+
+  (*   val createDiv : *)
+  (*     Dom_html.document Js.t -> *)
+  (*     Dom_html.divElement Js.t * *)
+  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+
+  (*   val createImg : *)
+  (*     Dom_html.document Js.t -> *)
+  (*     Dom_html.imageElement Js.t * *)
+  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+
+  (* end *)
 end
