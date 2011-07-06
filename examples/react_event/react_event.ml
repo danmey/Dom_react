@@ -7,10 +7,10 @@ let onload ev =
   (Dom_html.document##getElementById (js"body") >>=
      (fun body ->
        let button name =
-         let w, a = Dom_react.Prim.E.createButton Dom_html.document in
-         let ev = a (`Onclick, Dyn_conv.string) in
-         w##innerHTML <- js name;
-         Dom.appendChild body (w :> Dom.node Js.t);
+         let b, attacher = Dom_react.Prim.E.createButton Dom_html.document in
+         let ev = attacher (`Onclick, Dyn_conv.string) in
+         b##innerHTML <- js name;
+         Dom.appendChild body (b :> Dom.node Js.t);
          ev in
        let react_button e name =
          let w, a = Dom_react.E.createButton Dom_html.document in

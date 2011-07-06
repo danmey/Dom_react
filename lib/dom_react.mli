@@ -28,8 +28,9 @@ module Fun_prop : sig
              < selectedIndex : < set : 'a -> unit; .. > Js.gen_prop; .. >
              Js.t -> 'a -> unit
            val set_value :
-             < value : < set : 'a -> unit; .. > Js.gen_prop; .. > Js.t ->
-             'a -> unit
+           < value : < set : Js.js_string Js.t -> unit; .. > Js.gen_prop;
+             .. >
+           Js.t -> string -> unit
            val set_length :
              < length : < set : 'a -> unit; .. > Js.gen_prop; .. > Js.t ->
              'a -> unit
@@ -61,12 +62,12 @@ module Dyn_conv : sig
   exception Event_type
   val vec2 : [> `Vec2 of 'a * 'b ] -> 'a * 'b
   val int :
-    [> `Float of float | `Int of int | `String of string ] -> int
+    [> `Float of float | `Int of int | `String of string | `Unit ] -> int
   val float :
-    [> `Float of float | `Int of int | `String of string ] -> float
+    [> `Float of float | `Int of int | `String of string | `Unit ] -> float
   val string :
-    [> `Float of float | `Int of int | `String of string ] -> string
-
+    [> `Float of float | `Int of int | `String of string | `Unit ] -> string
+  val fix : 'a -> 'b -> 'a
 end
 
 

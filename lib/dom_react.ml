@@ -30,7 +30,7 @@ open React
 
 module Fun_prop = struct
     let set_selectedIndex w v = w ## selectedIndex <- v
-    let set_value w v = w ## value <- v
+    let set_value w v = w ## value <- Js.string v
     let set_length w v = w ## length <- v
     let set_options w v = w ## options <- v
     let set_disabled w v = w ## disabled <- v
@@ -52,6 +52,7 @@ module Fun_prop = struct
     let innerHTML w v = Js.to_string w ## innerHTML
 end
 
+
 (* Let's say we want a taste of dynamic type system to ensure we can
    broadcast any type of event easily.  *)
   
@@ -67,20 +68,25 @@ module Dyn_conv = struct
       | `Int i -> i
       | `String str -> int_of_string str
       | `Float f -> int_of_float f
+      | `Unit -> 0
       | _ -> raise Event_type
 
   let float  = function 
     | `Float f -> f
     | `Int i -> float_of_int i
     | `String str -> float_of_string str
+    | `Unit -> 0.
     | _ -> raise Event_type
 
   let string = function 
     | `String s   -> s
     | `Int i -> string_of_int i
     | `Float f -> string_of_float f
+    | `Unit -> ""
     | _ -> raise Event_type
 
+  let unit _ = ()
+  let fix i _ = i
 end
 
 module Dom_react = struct
