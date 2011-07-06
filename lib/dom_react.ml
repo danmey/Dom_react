@@ -79,6 +79,7 @@ module Dyn_conv = struct
     | `String s   -> s
     | `Int i -> string_of_int i
     | `Float f -> string_of_float f
+    | _ -> raise Event_type
 
 end
 

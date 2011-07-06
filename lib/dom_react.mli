@@ -65,7 +65,8 @@ module Dyn_conv : sig
   val float :
     [> `Float of float | `Int of int | `String of string ] -> float
   val string :
-    [< `Float of float | `Int of int | `String of string ] -> string
+    [> `Float of float | `Int of int | `String of string ] -> string
+
 end
 
 
@@ -113,7 +114,7 @@ module Dom_react : sig
       ?name:Js.js_string Js.t ->
       Dom_html.document Js.t ->
       Dom_html.buttonElement Js.t *
-        (common_event_source * ([> `Int of int | `Vec2 of int * int ] -> 'a) -> 'a React.event)
+        (common_event_source * ([> `Int of int | `Vec2 of int * int  ] -> 'a) -> 'a React.event)
 
     val createDiv :
       Dom_html.document Js.t ->
