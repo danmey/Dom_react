@@ -1,3 +1,20 @@
+(*------------------------------------------------------------------------------
+  This file is part of Dom_react.
+
+  Dom_react is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Foobar is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+  ----------------------------------------------------------------------------*)
+
 open React
 
 module Event_type = struct
@@ -16,9 +33,6 @@ module Event_type = struct
     | `Onselect
     | `Onchange ]
 
-  (* type ('a, 'b) event_map = (event_data * 'a) React.E.t -> ('a * 'b) React.E.t *)
-  (* type ('a, 'b) event_attacher = event_type * ('a, 'b) event_map -> ('a * 'b) React.E.t *)
-
   let vec2   = function | `Vec2 (x,y) -> Some (x,y) | _ -> None
   let int    = function | `Int i      -> Some i     | _ -> None
   let float  = function | `Float f    -> Some f     | _ -> None
@@ -29,6 +43,7 @@ end
 module Dom_html_react = struct
 
   module E = struct
+
   type common_event_source =
     [ `Onclick
     | `Ondblclick
@@ -98,5 +113,8 @@ module Dom_html_react = struct
     install_react (Dom_html.createDiv doc)
   let createImg     doc =
     install_react (Dom_html.createImg doc)
+  end
+
+  module S = struct
   end
 end

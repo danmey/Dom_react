@@ -24,6 +24,7 @@ open Js
 
 
 module Event_type : sig
+
   type event_type =
     [ `Onclick 
     | `Ondblclick 
@@ -124,43 +125,44 @@ module Dom_html_react : sig
   (*       | `ScrollWidth *)
   (*       | `ScrollHeight ] *)
 
+  (*   type 'a update_func = ('a -> unit) -> unit *)
   (*   val createSelect : *)
   (*     ?_type:Js.js_string Js.t -> *)
   (*     ?name:Js.js_string Js.t -> *)
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.selectElement Js.t * *)
-  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+  (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
 
   (*   val createInput : *)
   (*     ?_type:Js.js_string Js.t -> *)
   (*     ?name:Js.js_string Js.t -> *)
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.inputElement Js.t * *)
-  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+  (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
 
   (*   val createTextarea : *)
   (*     ?_type:Js.js_string Js.t -> *)
   (*     ?name:Js.js_string Js.t -> *)
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.textAreaElement Js.t * *)
-  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+  (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
 
   (*   val createButton : *)
   (*     ?_type:Js.js_string Js.t -> *)
   (*     ?name:Js.js_string Js.t -> *)
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.buttonElement Js.t * *)
-  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+  (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
 
   (*   val createDiv : *)
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.divElement Js.t * *)
-  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+  (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
 
   (*   val createImg : *)
   (*     Dom_html.document Js.t -> *)
   (*     Dom_html.imageElement Js.t * *)
-  (*       (common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
+  (*       (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
 
   (* end *)
 end
