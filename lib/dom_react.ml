@@ -17,34 +17,79 @@
 
 open React
 
-module Event_type = struct
+  
+(* After long though I came to conclusion I need to completely
+   deconstruct nice js_of_ocaml `properties' syntax into bunch of
+   functions, instead of using polymorphic variant selectors. This
+   solution is more type safe, more efficient (avoding constructing
+   dynamic continuations), flexible and make type inference happy
+   . Maybe such solution would be feasible as a wrapper for whole
+   Dom_html library, to allow more functional constructs.  Polymorphic
+   variants selectors still remain experimetaly in Prim module. At the
+   end I think we will go for hybrid solution. *)
 
-  type event_type =
-    [ `Onclick 
-    | `Ondblclick 
-    | `Onmousedown 
-    | `Onmouseup 
-    | `Onmouseover 
-    | `Onmousemove
-    | `Onmouseout
-    | `Onkeypress
-    | `Onkeydown
-    | `Onkeyup
-    | `Onselect
-    | `Onchange ]
+module Fun_prop = struct
+    let set_selectedIndex w v = w ## selectedIndex <- v
+    let set_value w v = w ## value <- v
+    let set_length w v = w ## length <- v
+    let set_options w v = w ## options <- v
+    let set_disabled w v = w ## disabled <- v
+    let set_multiple w v = w ## multiple <- v
+    let set_name w v = w ## name <- v
+    let set_size w v = w ## size <- v
+    let set_tabIndex w v = w ## tabIndex <- v
+    let set_innerHTML w v = w ## innerHTML <- Js.string v
 
-  let vec2   = function | `Vec2 (x,y) -> Some (x,y) | _ -> None
-  let int    = function | `Int i      -> Some i     | _ -> None
-  let float  = function | `Float f    -> Some f     | _ -> None
-  let string = function | `String s   -> Some s     | _ -> None
+    let selectedIndex w v = w ## selectedIndex
+    let value w v = w ## value
+    let length w v = w ## length
+    let options w v = w ## options
+    let disabled w v = w ## disabled
+    let multiple w v = w ## multiple
+    let name w v = w ## name
+    let size w v = w ## size
+    let tabIndex w v = w ## tabIndex
+    let innerHTML w v = Js.to_string w ## innerHTML
+end
+
+(* Let's say we want a taste of dynamic type system to ensure we can
+   broadcast any type of event easily.  *)
+  
+module Dyn_conv = struct
+
+  exception Event_type
+
+  let vec2   = function 
+    | `Vec2 (x,y) -> x,y 
+    | _ -> raise Event_type
+
+  let int = function 
+      | `Int i -> i
+      | `String str -> int_of_string str
+      | `Float f -> int_of_float f
+      | _ -> raise Event_type
+
+  let float  = function 
+    | `Float f -> f
+    | `Int i -> float_of_int i
+    | `String str -> float_of_string str
+    | _ -> raise Event_type
+
+  let string = function 
+    | `String s   -> s
+    | `Int i -> string_of_int i
+    | `Float f -> string_of_float f
 
 end
 
-module Dom_html_react = struct
-
+module Dom_react = struct
+    
   module Prim = struct
     module E = struct
-
+        
+      (* Define event selectors, not sure if I should not go with the
+      properties, this with map gives so much flexibility in
+      converrsion of the types as an ouput primitive*)
       type common_event_source =
         [ `Onclick
         | `Ondblclick
@@ -100,7 +145,7 @@ module Dom_html_react = struct
         w, fun (et, map) -> 
           let e, send = React.E.create () in
           basic_event_prim w send et;
-          React.E.fmap map e
+          React.E.map map e
             
       let createSelect ?_type ?name doc =
         install_react (Dom_html.createSelect ?_type ?name doc)
@@ -148,4 +193,12 @@ module Dom_html_react = struct
           
     end
   end
+module E = struct
+
+
+    let createButton ?_type ?name doc =
+      let w = Dom_html.createButton ?_type ?name doc in
+      w, fun (e, setter) -> E.map (setter w) e
+  end
 end
+    

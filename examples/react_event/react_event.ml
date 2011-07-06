@@ -7,16 +7,24 @@ let onload ev =
   (Dom_html.document##getElementById (js"body") >>=
      (fun body ->
        let button name =
-         let w, a = Dom_html_react.Prim.E.createButton Dom_html.document in
-         let ev = a (`Onclick, Event_type.int) in
+         let w, a = Dom_react.Prim.E.createButton Dom_html.document in
+         let ev = a (`Onclick, Dyn_conv.int) in
          w##innerHTML <- js name;
          Dom.appendChild body (w :> Dom.node Js.t);
          ev in
+       let react_button e name =
+         let w, a = Dom_react.E.createButton Dom_html.document in
+         let ev = a (e, Fun_prop.set_innerHTML) in
+         w##innerHTML <- js name;
+         Dom.appendChild body (w :> Dom.node Js.t);
+         ev in
+ 
        let left = button "<" in
        let right = button ">" in
-       React.E.map (fun i -> Dom_html.window ## alert (js (Printf.sprintf "left clicked: %d" i))) left;
+       let result = react_button (E.map string_of_int left) "0" in
        React.E.map (fun i -> Dom_html.window ## alert (js (Printf.sprintf "right clicked: %d" i))) right;
        Js.Opt.return ()));
+
   (* (Dom_html.document##getElementById (js"body") >>= *)
   (*    (fun body -> *)
   (*      Dom.appendChild body (select :> Dom.node Js.t); *)

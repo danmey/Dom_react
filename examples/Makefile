@@ -1,6 +1,7 @@
 all: react_event
 
-react_event: ../lib/dom_react.cma
+.PHONY: force
+react_event: force
 	@echo "[MAKE] in examples"
 	@(${MAKE} -C react_event);
 
