@@ -1,4 +1,4 @@
-LIBRARY=Dom_react
+LIBRARY=dom_react
 DIRS=lib examples
 
 all: lib examples

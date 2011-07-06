@@ -38,7 +38,7 @@ $(DOM_REACT_LIB):$(CMOS) $(DOM_REACT)
 
 depend: ocamldsort
 
-ocamldep:
+ocamldep:g
 	($(OCAMLFIND) ocamldep $(OCAMLFLAGS) $(MLS); \
 	$(OCAMLFIND) ocamldep $(OCAMLIFLAGS) $(MLIS)) > .depend
 
