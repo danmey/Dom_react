@@ -1,12 +1,30 @@
-let js = Js.string
+(*------------------------------------------------------------------------------
+  This file is part of Dom_react.
+
+  Dom_react is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Foobar is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public License
+  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+  ----------------------------------------------------------------------------*)
+
 
 open Dom_react
 open React
 
+let js = Js.string
+
 let onload ev =
   let (>>=) = Js.Opt.bind in
   let return = Js.Opt.return in
-  (Dom_html.document##getElementById (js"body") >>=
+  let _ = Dom_html.document##getElementById (js"body") >>=
      (fun body ->
        
        (* We need to keep events in the list so we can perform action depending on it
@@ -16,11 +34,10 @@ let onload ev =
        (* Create a button with value, and caption under table cell *)
        let button parent name value =
          let w, a = Dom_react.Prim.E.createButton Dom_html.document in
-         let ev = a (`Onclick, value) in
+         let ev = a (`Onclick, Dyn_conv.fix value) in
          w##innerHTML <- js name;
          Dom.appendChild parent (w :> Dom.node Js.t);
-         event_lst := ev :: !event_lst;
-         ev
+         event_lst := ev :: !event_lst
        in
 
        (* Our result widget *)
@@ -35,34 +52,36 @@ let onload ev =
        for row = 0 to 3-1 do
          let tr = table ## insertRow (-1) in
          for col = 0 to 4-1 do
-           let td = tr##insertCell (-1) in
+           let td = tr ## insertCell (-1) in
            (* Last column reserved for operators *)
            if col != 3 then
              let index = row * 3 + col + 1 in
-               button td (string_of_int index) (Dyn_conv.fix (`Value index))
+               button td (string_of_int index) (`Value index)
            else
              if row < 2 then
-               let op = [|"+";"-";"*";"/"|].(row) in
-               button td op (Dyn_conv.fix (`Op op))
+               let op = [|"+", (+);"-", (-);"*", ( * ); "/", (/)|].(row) in
+               button td (fst op) (`Op (snd op))
              (* ... last column apart from the last row which is 0 *)
-             else button td "0" (Dyn_conv.fix (`Value 0))
+             else button td "0" (`Value 0)
          done
        done;
-       
+  
        (* Perform calculation accumulate it in tuple (really a stack
           with access to only two top elements)*)
+       let eval (a,b) = function
+         | `Op op -> (b, op a b)
+         | `Value a -> (b, a) in
+
        let ev =
-         E.fold (fun (a,b) -> function
-           | `Op op -> let op = match op with
-               | "+" -> (+)
-               | "-" -> (-) in
-             (b, op a b)
-           | `Value a -> (b, a)) (1,0) (E.select !event_lst)
+         E.fold eval (0,0) (E.select !event_lst)
        in
-       E.map (Fun_prop.set_value result) (E.map (fun (a,b) -> string_of_int b) ev);
-       return ()));
+       let ev = (E.map
+                   (Fun_prop.set_value result) 
+                   (E.map (fun (a,b) -> string_of_int b) ev)) in
+       return ev) in
   Js._false
 ;;
+
 Dom_html.window##onload <- (Dom_html.handler onload)
   
   
