@@ -18,10 +18,11 @@
 
 open Dom_react
 open React
+module Dom_react = Dom_react.Prim.E
 
 let js = Js.string
 
-let onload ev =
+let onload () =
   let (>>=) = Js.Opt.bind in
   let return = Js.Opt.return in
   let _ = Dom_html.document##getElementById (js"body") >>=
@@ -33,10 +34,10 @@ let onload ev =
 
        (* Create a button with value, and caption under table cell *)
        let button parent name value =
-         let element , create_event = Dom_react.Prim.E.createButton Dom_html.document in
+         let element , create_event = Dom_react.createButton Dom_html.document in
          Dom.appendChild parent (element :> Dom.node Js.t);
          element ## innerHTML <- js name;
-         let ev = create_event Dom_react.Prim.E.onclick in
+         let ev = create_event Dom_react.onclick in
          let ev = E.stamp ev value in
          event_lst := ev :: !event_lst;
          ev
@@ -77,13 +78,12 @@ let onload ev =
        let ev =
          E.fold eval (0,0) (E.select !event_lst)
        in
-       let ev = (E.map
-                   (Fun_prop.set_value result) 
-                   (E.map (fun (a,b) -> string_of_int b) ev)) in
-       return ev) in
-  Js._false
+       return (E.map
+         (Fun_prop.set_value result) 
+         (E.map (fun (a,b) -> string_of_int b) ev))) in
+  ()
 ;;
 
-Dom_html.window##onload <- (Dom_html.handler onload)
-  
-  
+let () =
+  let e = Dom_react.create Dom_html.window Dom_react.onload in
+  ignore(E.map onload e)

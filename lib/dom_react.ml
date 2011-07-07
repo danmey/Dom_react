@@ -51,6 +51,7 @@ module Fun_prop = struct
     let set_onkeypress w v = w ## onkeypress <- Dom_html.handler v
     let set_onkeydown w v = w ## onkeydown <- Dom_html.handler v
     let set_onkeyup w v = w ## onkeyup <- Dom_html.handler v
+    let set_onload w v = w ## onload <- Dom_html.handler (fun ev -> v(); Js._false)
 
     let selectedIndex w v = w ## selectedIndex
     let value w v = w ## value
@@ -160,13 +161,16 @@ module Dom_react = struct
         let onkeypress = Fun_prop.set_onkeypress, key_handler
         let onkeydown = Fun_prop.set_onkeydown, key_handler
         let onkeyup = Fun_prop.set_onkeyup, key_handler
+        let onload = Fun_prop.set_onload, (fun send ev -> send ())
+
+        let create w event =
+          let set_meth, handler = event in
+          let event, send = E.create () in
+          let _ = set_meth w (handler send) in
+          event
 
         let install_react w =
-          w, fun event ->
-            let set_meth, handler = event in
-            let event, send = E.create () in
-            let _ = set_meth w (handler send) in
-            event
+          w, fun event -> create w event
               
         let createSelect ?_type ?name doc =
           install_react (Dom_html.createSelect ?_type ?name doc)
