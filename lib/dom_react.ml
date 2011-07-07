@@ -26,7 +26,8 @@ open React
    . Maybe such solution would be feasible as a wrapper for whole
    Dom_html library, to allow more functional constructs.  Polymorphic
    variants selectors still remain experimetaly in Prim module. At the
-   end I think we will go for hybrid solution. *)
+   end I think we will go for hybrid solution. 
+   UPDATE: Even for events I decided to go for this solution. *)
 
 module Fun_prop = struct
     let set_selectedIndex w v = w ## selectedIndex <- v
@@ -39,6 +40,17 @@ module Fun_prop = struct
     let set_size w v = w ## size <- v
     let set_tabIndex w v = w ## tabIndex <- v
     let set_innerHTML w v = w ## innerHTML <- Js.string v
+
+    let set_onclick w v = w ## onclick <- Dom_html.handler v
+    let set_ondblclick w v = w ## ondblclick <- Dom_html.handler v
+    let set_onmousedown w v = w ## onmousedown <- Dom_html.handler v
+    let set_onmouseup w v = w ## onmouseup <- Dom_html.handler v
+    let set_onmouseover w v = w ## onmouseover <- Dom_html.handler v
+    let set_onmousemove w v = w ## onmousemove <- Dom_html.handler v
+    let set_onmouseout w v = w ## onmouseout <- Dom_html.handler v
+    let set_onkeypress w v = w ## onkeypress <- Dom_html.handler v
+    let set_onkeydown w v = w ## onkeydown <- Dom_html.handler v
+    let set_onkeyup w v = w ## onkeyup <- Dom_html.handler v
 
     let selectedIndex w v = w ## selectedIndex
     let value w v = w ## value
@@ -96,76 +108,78 @@ module Dom_react = struct
         
       (* Define event selectors, not sure if I should not go with the
       properties, this with map gives so much flexibility in
-      converrsion of the types as an ouput primitive*)
-      type common_event_source =
-        [ `Onclick
-        | `Ondblclick
-        | `Onkeydown
-        | `Onkeypress
-        | `Onkeyup
-        | `Onmousedown
-        | `Onmousemove
-        | `Onmouseout
-        | `Onmouseover
-        | `Onmouseup ]
+      conversion of the types as an ouput primitive*)
+      (* type common_event_source = *)
+      (*   [ `Onclick *)
+      (*   | `Ondblclick *)
+      (*   | `Onkeydown *)
+      (*   | `Onkeypress *)
+      (*   | `Onkeyup *)
+      (*   | `Onmousedown *)
+      (*   | `Onmousemove *)
+      (*   | `Onmouseout *)
+      (*   | `Onmouseover *)
+      (*   | `Onmouseup ] *)
 
-      let basic_event_prim w send =
-        let install_handler set_meth handler =
-          set_meth handler in
-    (* Not entirelly correct if the curried function would be stored *)
-        let clicks = ref 0 in
-        let mouse_click_handler =
-          Dom_html.handler
-            (fun ev ->
-              send (`Int (!clicks)); incr clicks; Js._false)
-        in
-        let mouse_handler =
-          Dom_html.handler 
-            (fun ev ->
-              let x, y = ev ## clientX, ev ## clientY in
-              send (`Vec2 (x,y)); Js._false) in
-        let key_handler =
-          Dom_html.handler
-            (fun ev ->
-              send (`Int (ev ## keyCode));
-              Js._false)
-        in
-        function
-          | `Onclick -> install_handler (fun v -> w ## onclick <- v) mouse_click_handler
-          | `Ondblclick -> install_handler (fun v -> w ## ondblclick <- v) mouse_click_handler
-          | `Onmousedown -> install_handler (fun v -> w ## onmousedown <- v) mouse_handler
-          | `Onmouseup -> install_handler (fun v -> w ## onmouseup <- v) mouse_handler
-          | `Onmouseover -> install_handler (fun v -> w ## onmouseover <- v) mouse_handler
-          | `Onmousemove -> 
-            let lastx, lasty = ref 0, ref 0 in
-            install_handler (fun v -> w ## onmouseover <- v) (Dom_html.handler begin fun ev ->
-              let x, y = ev ## clientX, ev ## clientY in
-              let dx, dy = x - !lastx, y - !lasty in
-              lastx := x; lasty := y;
-              send (`Vec2 (dx,dy)); Js._false end)
-          | `Onmouseout -> install_handler (fun v -> w ## onmouseout <- v) mouse_handler
-          | `Onkeypress -> install_handler (fun v -> w ## onkeypress <- v) key_handler
-          | `Onkeydown -> install_handler (fun v -> w ## onkeydown <- v) key_handler
-          | `Onkeyup -> install_handler (fun v -> w ## onkeyup <- v) key_handler
+      (* type event_window_source = *)
+      (*   [ `Onload *)
+      (*   | `Onbeforeunload *)
+      (*   | `Onblur *)
+      (*   | `Onfocus *)
+      (*   | `Onresize] *)
 
-      let install_react w =
-        w, fun (et, map) -> 
-          let e, send = React.E.create () in
-          basic_event_prim w send et;
-          React.E.map map e
+        let mouse_click_handler send =
+          let clicks = ref 0 in
+          fun ev -> send (!clicks); incr clicks; Js._false
             
-      let createSelect ?_type ?name doc =
-        install_react (Dom_html.createSelect ?_type ?name doc)
-      let createInput ?_type ?name doc =
-        install_react (Dom_html.createInput ?_type ?name doc)
-      let createTextarea ?_type ?name doc = 
-        install_react (Dom_html.createTextarea ?_type ?name doc)
-      let createButton   ?_type ?name doc = 
-        install_react (Dom_html.createButton ?_type ?name doc)
-      let createDiv       doc = 
-        install_react (Dom_html.createDiv doc)
-      let createImg     doc =
-        install_react (Dom_html.createImg doc)
+        let mouse_handler send =
+            (fun ev -> 
+              let x, y = ev ## clientX, ev ## clientY in
+              send (x,y); Js._false)
+            
+        let key_handler send =
+            (fun ev ->
+              send (ev ## keyCode);
+              Js._false)
+          
+        let mouse_move_handler send =
+        let lastx, lasty = ref 0, ref 0 in
+        fun ev ->
+          let x, y = ev ## clientX, ev ## clientY in
+          let dx, dy = x - !lastx, y - !lasty in
+          lastx := x; lasty := y;
+          send (dx,dy); 
+          Js._false
+
+        let onclick = Fun_prop.set_onclick, mouse_click_handler
+        let ondblclick = Fun_prop.set_ondblclick, mouse_click_handler
+        let onmousedown = Fun_prop.set_onmousedown, mouse_handler
+        let onmouseup = Fun_prop.set_onmouseup, mouse_handler
+        let onmouseover = Fun_prop.set_onmouseover, mouse_handler
+        let onmousemove = Fun_prop.set_onmousemove, mouse_move_handler
+        let onkeypress = Fun_prop.set_onkeypress, key_handler
+        let onkeydown = Fun_prop.set_onkeydown, key_handler
+        let onkeyup = Fun_prop.set_onkeyup, key_handler
+
+        let install_react w =
+          w, fun event ->
+            let set_meth, handler = event in
+            let event, send = E.create () in
+            let _ = set_meth w (handler send) in
+            event
+              
+        let createSelect ?_type ?name doc =
+          install_react (Dom_html.createSelect ?_type ?name doc)
+        let createInput ?_type ?name doc =
+          install_react (Dom_html.createInput ?_type ?name doc)
+        let createTextarea ?_type ?name doc = 
+          install_react (Dom_html.createTextarea ?_type ?name doc)
+        let createButton   ?_type ?name doc = 
+          install_react (Dom_html.createButton ?_type ?name doc)
+        let createDiv       doc = 
+          install_react (Dom_html.createDiv doc)
+        let createImg     doc =
+          install_react (Dom_html.createImg doc)
     end
 
     module S = struct

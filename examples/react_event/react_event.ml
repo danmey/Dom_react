@@ -8,10 +8,10 @@ let onload ev =
      (fun body ->
        let button name =
          let b, attacher = Dom_react.Prim.E.createButton Dom_html.document in
-         let ev = attacher (`Onclick, Dyn_conv.string) in
+         let ev = attacher Dom_react.Prim.E.onclick in
          b##innerHTML <- js name;
          Dom.appendChild body (b :> Dom.node Js.t);
-         ev in
+         E.map string_of_int ev in
        let react_button e name =
          let w, a = Dom_react.E.createButton Dom_html.document in
          let ev = a (e, Fun_prop.set_innerHTML) in

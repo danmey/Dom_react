@@ -33,11 +33,13 @@ let onload ev =
 
        (* Create a button with value, and caption under table cell *)
        let button parent name value =
-         let w, a = Dom_react.Prim.E.createButton Dom_html.document in
-         let ev = a (`Onclick, Dyn_conv.fix value) in
-         w##innerHTML <- js name;
-         Dom.appendChild parent (w :> Dom.node Js.t);
-         event_lst := ev :: !event_lst
+         let element , create_event = Dom_react.Prim.E.createButton Dom_html.document in
+         Dom.appendChild parent (element :> Dom.node Js.t);
+         element ## innerHTML <- js name;
+         let ev = create_event Dom_react.Prim.E.onclick in
+         let ev = E.stamp ev value in
+         event_lst := ev :: !event_lst;
+         ev
        in
 
        (* Our result widget *)
