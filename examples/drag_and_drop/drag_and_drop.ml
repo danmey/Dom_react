@@ -17,9 +17,6 @@
 
 
 open Dom_react
-open React
-module Dom_react = Dom_react.Prim.E
-
 let js = Js.string
 
 let onload () =
@@ -27,14 +24,16 @@ let onload () =
   let return = Js.Opt.return in
   let _ = Dom_html.document##getElementById (js"body") >>=
     (fun body ->
-      let mouse = Dom_react.create Dom_html.document Dom_react.onmousemove in
+      let mouse = E.create Dom_html.document E.onmousemove in
       let mouse = S.hold (0,0) mouse in
       let div parent name =
-        let element , create_event = Dom_react.createDiv Dom_html.document in
+        let element = Dom_html.createDiv Dom_html.document in
         Dom.appendChild parent (element :> Dom.node Js.t);
         element ## innerHTML <- js name;
         element ## style ## position <- js "absolute";
-        let md, mu = create_event Dom_react.onmousedown, create_event Dom_react.onmouseup in
+        let md, mu = 
+          E.create element E.onmousedown, 
+          E.create element E.onmouseup in
         let md, mu = E.stamp md true, E.stamp mu false in
         let ev = E.select [md; mu] in
         let s = S.hold false ev in
@@ -49,5 +48,5 @@ let onload () =
   ()
 
 let e =
-  let e = Dom_react.create Dom_html.window Dom_react.onload in
+  let e = E.create Dom_html.window E.onload in
   E.map onload e

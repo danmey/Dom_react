@@ -17,8 +17,6 @@
 
 
 open Dom_react
-open React
-module Dom_react = Dom_react.Prim.E
 
 let js = Js.string
 
@@ -34,11 +32,13 @@ let onload () =
 
        (* Create a button with value, and caption under table cell *)
        let button parent name value =
-         let element , create_event = Dom_react.createButton Dom_html.document in
+         let element = Dom_html.createButton Dom_html.document in
          Dom.appendChild parent (element :> Dom.node Js.t);
          element ## innerHTML <- js name;
-         let ev = create_event Dom_react.onclick in
+
+         let ev = E.create element E.onclick in
          let ev = E.stamp ev value in
+
          event_lst := ev :: !event_lst;
          ev
        in
@@ -85,5 +85,5 @@ let onload () =
 ;;
 
 let () =
-  let e = Dom_react.create Dom_html.window Dom_react.onload in
+  let e = Dom_react.E.create Dom_html.window Dom_react.E.onload in
   ignore(E.map onload e)

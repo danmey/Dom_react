@@ -76,165 +76,50 @@ module Fun_prop = struct
     end
 end
 
-
-(* Let's say we want a taste of dynamic type system to ensure we can
-   broadcast any type of event easily.  *)
-  
-module Dyn_conv = struct
-
-  exception Event_type
-
-  let vec2   = function 
-    | `Vec2 (x,y) -> x,y 
-    | _ -> raise Event_type
-
-  let int = function 
-      | `Int i -> i
-      | `String str -> int_of_string str
-      | `Float f -> int_of_float f
-      | `Unit -> 0
-      | _ -> raise Event_type
-
-  let float  = function 
-    | `Float f -> f
-    | `Int i -> float_of_int i
-    | `String str -> float_of_string str
-    | `Unit -> 0.
-    | _ -> raise Event_type
-
-  let string = function 
-    | `String s   -> s
-    | `Int i -> string_of_int i
-    | `Float f -> string_of_float f
-    | `Unit -> ""
-    | _ -> raise Event_type
-
-  let unit _ = ()
-  let fix i _ = i
-end
-
-module Dom_react = struct
-    
-  module Prim = struct
-    module E = struct
-        
-      (* Define event selectors, not sure if I should not go with the
-      properties, this with map gives so much flexibility in
-      conversion of the types as an ouput primitive*)
-      (* type common_event_source = *)
-      (*   [ `Onclick *)
-      (*   | `Ondblclick *)
-      (*   | `Onkeydown *)
-      (*   | `Onkeypress *)
-      (*   | `Onkeyup *)
-      (*   | `Onmousedown *)
-      (*   | `Onmousemove *)
-      (*   | `Onmouseout *)
-      (*   | `Onmouseover *)
-      (*   | `Onmouseup ] *)
-
-      (* type event_window_source = *)
-      (*   [ `Onload *)
-      (*   | `Onbeforeunload *)
-      (*   | `Onblur *)
-      (*   | `Onfocus *)
-      (*   | `Onresize] *)
-
-        let mouse_click_handler send =
-          let clicks = ref 0 in
-          fun ev -> send (!clicks); incr clicks; Js._false
-            
-        let mouse_handler send =
-            (fun ev -> 
-              let x, y = ev ## clientX, ev ## clientY in
-              send (x,y); Js._false)
-            
-        let key_handler send =
-            (fun ev ->
-              send (ev ## keyCode);
-              Js._false)
-          
-        let mouse_move_handler send =
-        let lastx, lasty = ref 0, ref 0 in
-        fun ev ->
-          let x, y = ev ## clientX, ev ## clientY in
-          let dx, dy = x - !lastx, y - !lasty in
-          lastx := x; lasty := y;
-          send (dx,dy); 
-          Js._false
-
-        let onclick = Fun_prop.set_onclick, mouse_click_handler
-        let ondblclick = Fun_prop.set_ondblclick, mouse_click_handler
-        let onmousedown = Fun_prop.set_onmousedown, mouse_handler
-        let onmouseup = Fun_prop.set_onmouseup, mouse_handler
-        let onmouseover = Fun_prop.set_onmouseover, mouse_handler
-        let onmousemove = Fun_prop.set_onmousemove, mouse_handler
-        let onkeypress = Fun_prop.set_onkeypress, key_handler
-        let onkeydown = Fun_prop.set_onkeydown, key_handler
-        let onkeyup = Fun_prop.set_onkeyup, key_handler
-        let onload = Fun_prop.set_onload, (fun send ev -> send ())
-
-        let create w event =
-          let set_meth, handler = event in
-          let event, send = E.create () in
-          let _ = set_meth w (handler send) in
-          event
-
-        let install_react w =
-          w, fun event -> create w event
-              
-        let createSelect ?_type ?name doc =
-          install_react (Dom_html.createSelect ?_type ?name doc)
-        let createInput ?_type ?name doc =
-          install_react (Dom_html.createInput ?_type ?name doc)
-        let createTextarea ?_type ?name doc = 
-          install_react (Dom_html.createTextarea ?_type ?name doc)
-        let createButton   ?_type ?name doc = 
-          install_react (Dom_html.createButton ?_type ?name doc)
-        let createDiv       doc = 
-          install_react (Dom_html.createDiv doc)
-        let createImg     doc =
-          install_react (Dom_html.createImg doc)
-    end
-
-    module S = struct
-      type common_signal_source =
-        [ `Id
-        | `Title
-        | `Lang
-        | `Dir
-        | `ClassName
-        | `Style
-        | `InnerHTML
-        | `ClientLeft
-        | `ClientTop
-        | `ClientWidth
-        | `ClientHeight
-        | `OffsetLeft
-        | `OffsetTop
-        | `OffsetParent
-        | `OffsetWidth
-        | `offsetHeight
-        | `ScrollLeft
-        | `ScrollTop
-        | `ScrollWidth
-        | `ScrollHeight ]
-
-      (* val createSelect : *)
-      (*   ?_type:Js.js_string Js.t -> *)
-      (*   ?name:Js.js_string Js.t -> *)
-      (*   Dom_html.document Js.t -> *)
-      (*   Dom_html.selectElement Js.t * *)
-      (*     (update_func * common_signal_source * ([> `Int of int | `Vec2 of int * int ] -> 'a option) -> 'a React.event) *)
-          
-    end
-  end
 module E = struct
-
-
-    let createButton ?_type ?name doc =
-      let w = Dom_html.createButton ?_type ?name doc in
-      w, fun (e, setter) -> E.map (setter w) e
-  end
-end
+  include React.E
+  let mouse_click_handler send =
+    let clicks = ref 0 in
+    fun ev -> send (!clicks); incr clicks; Js._false
+        
+  let mouse_handler send =
+    (fun ev -> 
+      let x, y = ev ## clientX, ev ## clientY in
+      send (x,y); Js._false)
+      
+  let key_handler send =
+    (fun ev ->
+      send (ev ## keyCode);
+      Js._false)
+      
+  let mouse_move_handler send =
+    let lastx, lasty = ref 0, ref 0 in
+    fun ev ->
+      let x, y = ev ## clientX, ev ## clientY in
+      let dx, dy = x - !lastx, y - !lasty in
+      lastx := x; lasty := y;
+      send (dx,dy); 
+      Js._false
+        
+  let onclick = Fun_prop.set_onclick, mouse_click_handler
+  let ondblclick = Fun_prop.set_ondblclick, mouse_click_handler
+  let onmousedown = Fun_prop.set_onmousedown, mouse_handler
+  let onmouseup = Fun_prop.set_onmouseup, mouse_handler
+  let onmouseover = Fun_prop.set_onmouseover, mouse_handler
+  let onmousemove = Fun_prop.set_onmousemove, mouse_handler
+  let onkeypress = Fun_prop.set_onkeypress, key_handler
+  let onkeydown = Fun_prop.set_onkeydown, key_handler
+  let onkeyup = Fun_prop.set_onkeyup, key_handler
+  let onload = Fun_prop.set_onload, (fun send ev -> send ())
     
+  let create w event =
+    let set_meth, handler = event in
+    let event, send = E.create () in
+    let _ = set_meth w (handler send) in
+    event
+
+end
+
+module S = struct
+  include React.S
+end
