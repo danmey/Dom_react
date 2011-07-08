@@ -27,7 +27,7 @@ open React
    Dom_html library, to allow more functional constructs.  Polymorphic
    variants selectors still remain experimetaly in Prim module. At the
    end I think we will go for hybrid solution. 
-   UPDATE: Even for events I decided to go for this solution. *)
+   UPDATE: Even for events I decided to go for functions. *)
 
 module Fun_prop = struct
     let set_selectedIndex w v = w ## selectedIndex <- v
@@ -63,6 +63,17 @@ module Fun_prop = struct
     let size w v = w ## size
     let tabIndex w v = w ## tabIndex
     let innerHTML w v = Js.to_string w ## innerHTML
+
+    (* Should be really wrapped with variants (mapping css_value -> string) *)
+    module Css = struct
+      let set_color w v = w ## style ## color <- Js.string v
+      let set_backgorund w v = w ## style ## background <- Js.string v
+      let set_position w v = w ## style ## position <- Js.string v
+      let set_left w v = w ## style ## left <- Js.string (string_of_int v)
+      let set_top w v = w ## style ## top <- Js.string (string_of_int v)
+      let set_width w v = w ## style ## width <- Js.string (string_of_int v)
+      let set_height w v = w ## style ## height <- Js.string (string_of_int v)
+    end
 end
 
 
@@ -157,7 +168,7 @@ module Dom_react = struct
         let onmousedown = Fun_prop.set_onmousedown, mouse_handler
         let onmouseup = Fun_prop.set_onmouseup, mouse_handler
         let onmouseover = Fun_prop.set_onmouseover, mouse_handler
-        let onmousemove = Fun_prop.set_onmousemove, mouse_move_handler
+        let onmousemove = Fun_prop.set_onmousemove, mouse_handler
         let onkeypress = Fun_prop.set_onkeypress, key_handler
         let onkeydown = Fun_prop.set_onkeydown, key_handler
         let onkeyup = Fun_prop.set_onkeyup, key_handler

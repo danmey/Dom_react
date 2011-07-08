@@ -1,4 +1,4 @@
-all: react_event calc
+all: react_event calc drag_and_drop
 
 .PHONY: force
 react_event: force
@@ -8,6 +8,10 @@ react_event: force
 calc: force
 	@echo "[MAKE] in examples"
 	@(${MAKE} -C calc);
+
+drag_and_drop: force
+	@echo "[MAKE] in examples"
+	@(${MAKE} -C drag_and_drop);
 
 clean:
 	@(${MAKE} -C react_event clean);
