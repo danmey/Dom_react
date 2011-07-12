@@ -67,12 +67,14 @@ module Fun_prop = struct
     (* Should be really wrapped with variants (mapping css_value -> string) *)
     module Css = struct
       let set_color w v = w ## style ## color <- Js.string v
-      let set_backgorund w v = w ## style ## background <- Js.string v
+      let set_background w v = w ## style ## background <- Js.string v
+      let set_backgroundColor w v = w ## style ## backgroundColor <- Js.string v
       let set_position w v = w ## style ## position <- Js.string v
       let set_left w v = w ## style ## left <- Js.string (string_of_int v)
       let set_top w v = w ## style ## top <- Js.string (string_of_int v)
       let set_width w v = w ## style ## width <- Js.string (string_of_int v)
       let set_height w v = w ## style ## height <- Js.string (string_of_int v)
+      let left w v = int_of_string (Js.to_string w ## style ## left)
     end
 end
 
@@ -122,4 +124,24 @@ end
 
 module S = struct
   include React.S
+    
+  let create w prop updater =
+    let signal, send = S.create (prop w) in
+    updater (fun () -> send (prop w));
+    S.map (fun _ -> prop w) signal
+end
+
+module Time = struct
+  let updater ms f =
+    let ms' = float ms in
+    let time = ref 0 in
+    let rec timeout_id = ref (lazy (Dom_html.window ## setTimeout (Js.wrap_callback loop, ms')))
+    and loop ev =
+      Dom_html.window ## clearTimeout (Lazy.force !timeout_id);
+      let () = f () in
+      time := !time + ms;
+      timeout_id := (lazy Dom_html.window ## setTimeout (Js.wrap_callback loop, ms'));
+      ignore (Lazy.force !timeout_id);
+    in
+    ignore (Lazy.force !timeout_id)
 end
