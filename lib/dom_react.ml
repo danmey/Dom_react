@@ -74,7 +74,7 @@ module Fun_prop = struct
       let set_top w v = w ## style ## top <- Js.string (string_of_int v)
       let set_width w v = w ## style ## width <- Js.string (string_of_int v)
       let set_height w v = w ## style ## height <- Js.string (string_of_int v)
-      let left w v = int_of_string (Js.to_string w ## style ## left)
+      let left w = int_of_string (Js.to_string w ## style ## left)
     end
 end
 
@@ -122,26 +122,35 @@ module E = struct
 
 end
 
+module Time = struct
+  let updater ms f =
+    let ms' = float ms in
+    let rec timeout_id = ref (lazy (Dom_html.window ## setTimeout (Js.wrap_callback loop, ms')))
+    and loop ev =
+      Dom_html.window ## clearTimeout (Lazy.force !timeout_id);
+      let () = f () in
+      timeout_id := (lazy Dom_html.window ## setTimeout (Js.wrap_callback loop, ms'));
+      ignore (Lazy.force !timeout_id);
+    in
+    ignore (Lazy.force !timeout_id)
+
+end
+
 module S = struct
   include React.S
     
   let create w prop updater =
     let signal, send = S.create (prop w) in
     updater (fun () -> send (prop w));
-    S.map (fun _ -> prop w) signal
+    signal
+
+  let time ?(accuracy=0.01) ?(start=0.) () =
+    let time = ref start in
+    let signal, send = S.create !time in
+    Time.updater (int_of_float (accuracy *. 1000.)) (fun () ->
+      time := !time +. accuracy;
+      send !time);
+    signal
+
 end
 
-module Time = struct
-  let updater ms f =
-    let ms' = float ms in
-    let time = ref 0 in
-    let rec timeout_id = ref (lazy (Dom_html.window ## setTimeout (Js.wrap_callback loop, ms')))
-    and loop ev =
-      Dom_html.window ## clearTimeout (Lazy.force !timeout_id);
-      let () = f () in
-      time := !time + ms;
-      timeout_id := (lazy Dom_html.window ## setTimeout (Js.wrap_callback loop, ms'));
-      ignore (Lazy.force !timeout_id);
-    in
-    ignore (Lazy.force !timeout_id)
-end

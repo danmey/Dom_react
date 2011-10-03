@@ -19,31 +19,51 @@
 open Dom_react
 let js = Js.string
 
+module WideningWidget = struct
+  let element ~name ~parent =
+    let element = Dom_html.createDiv Dom_html.document in
+    Dom.appendChild parent (element :> Dom.node Js.t);
+    element ## innerHTML <- js name;
+    element ## style ## position <- js "absolute";
+    element ## style ## background <- js "#ff0000";
+    element
+
+  let create parent =
+    let sizing = S.time () in
+    let e1 = element ~name:"first" ~parent in
+    let e2 = element ~name:"second" ~parent in
+    let e2_left = S.create e2 Fun_prop.Css.left  in
+    let sizing = S.map (fun f -> int_of_float (f *. 100.)) sizing in
+    ignore (S.map (Fun_prop.Css.set_left e1) sizing)
+    (* ignore (S.map (Fun_prop.Css.set_left e2) e2_left) *)
+end
 let onload () =
   let (>>=) = Js.Opt.bind in
   let return = Js.Opt.return in
   let _ = Dom_html.document##getElementById (js"body") >>=
     (fun body ->
-      let mouse = E.create Dom_html.document E.onmousemove in
-      let mouse = S.hold (0,0) mouse in
-      let div parent name =
-        let element = Dom_html.createDiv Dom_html.document in
-        Dom.appendChild parent (element :> Dom.node Js.t);
-        element ## innerHTML <- js name;
-        element ## style ## position <- js "absolute";
-        let md, mu = 
-          E.create element E.onmousedown, 
-          E.create element E.onmouseup in
-        let md, mu = E.stamp md true, E.stamp mu false in
-        let ev = E.select [md; mu] in
-        let s = S.hold false ev in
-        let col = function
-          | true -> "#ff0000"
-          | false -> "#ffff00" in
-        ignore (S.map (Fun_prop.Css.set_backgorund element) (S.map col s));
-        ignore (S.map (fun (x,y) -> Fun_prop.Css.set_left element x; Fun_prop.Css.set_top element y) mouse)
-      in
-      return (div body "ala ma kota"))
+      WideningWidget.create body;
+      return ())
+      (* let mouse = E.create Dom_html.document E.onmousemove in *)
+      (* let mouse = S.hold (0,0) mouse in *)
+      (* let div parent name = *)
+      (*   let element = Dom_html.createDiv Dom_html.document in *)
+      (*   Dom.appendChild parent (element :> Dom.node Js.t); *)
+      (*   element ## innerHTML <- js name; *)
+      (*   element ## style ## position <- js "absolute"; *)
+      (*   let md, mu =  *)
+      (*     E.create element E.onmousedown,  *)
+      (*     E.create element E.onmouseup in *)
+      (*   let md, mu = E.stamp md true, E.stamp mu false in *)
+      (*   let ev = E.select [md; mu] in *)
+      (*   let s = S.hold false ev in *)
+      (*   let col = function *)
+      (*     | true -> "#ff0000" *)
+      (*     | false -> "#ffff00" in *)
+      (*   ignore (S.map (Fun_prop.Css.set_background element) (S.map col s)); *)
+      (*   ignore (S.map (fun (x,y) -> Fun_prop.Css.set_left element x; Fun_prop.Css.set_top element y) mouse) *)
+      (* in *)
+      (* return (div body "ala ma kota")) *)
   in
   ()
 
