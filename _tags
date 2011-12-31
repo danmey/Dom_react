@@ -1,3 +1,2 @@
 <**/*.ml>: syntax(camlp4o), package(js_of_ocaml.syntax), package(react)
 <**/*.byte>: package(react), package(js_of_ocaml)
-<examples/**.{ml,byte}>: use_dom_react

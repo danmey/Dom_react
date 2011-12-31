@@ -1,4 +1,0 @@
-description = "Dom_react"
-version = "0.1"
-archive(byte) = "dom_react.cma"
-requires = "js_of_ocaml react"
