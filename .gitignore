@@ -1,5 +1,11 @@
 /_build
+/lib/META
+/lib/dom_react.mllib
+setup.*
 *.byte
 *.cm*
 *.js
 *.annot
+AUTHORS.txt
+INSTALL.txt
+README.txt

@@ -30,6 +30,11 @@ dispatch begin function
              Cmd (S[A"cp"; Px src; Px dst])]
       end;
     flag ["ocaml"; "byte"; "compile"] (S[A"-I"; P"lib"]);
-    flag ["ocaml"; "byte"; "link"] (S[P("lib/dom_react.cmo")])
+    flag ["ocaml"; "byte"; "link"] (S[P("lib/dom_react.cmo")]);
+    
+  | Before_options ->
+    Options.use_ocamlfind := true;
+    Options.targets := ["examples.otarget"]
+
   | _ -> ()
 end

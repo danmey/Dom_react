@@ -2,7 +2,8 @@
 OASISFormat: 0.2
 Name:        dom_react
 Version:     0.1.0
-Synopsis:    Reactive programming in a browser through js_of_ocaml and React
+Synopsis:    
+ Reactive programming in a browser through js_of_ocaml and React
 Description: 
  The library provides higher-level reactive constructs for building
  Functional Reactive applications in a browser using React library,
