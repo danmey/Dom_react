@@ -25,7 +25,7 @@ XCustomBuildDistClean: ocamlbuild -clean
 Library dom_react
   Path:         lib
   BuildTools:   ocamlbuild
-  BuildDepends: react
+  BuildDepends: js_of_ocaml, react
   Modules:      Dom_react
 
 SourceRepository master
