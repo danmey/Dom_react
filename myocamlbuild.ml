@@ -18,8 +18,8 @@ let js_tweako = S[Px (js_runtime "runtime.js"); Px (js_runtime "weak.js")];;
 
 dispatch begin function
   | Before_rules ->
-    rule "js_of_ocaml: cmo -> js"
-      ~deps:["lib/dom_react.cmo";"%.byte"]
+    rule "js_of_ocaml: byte -> js"
+      ~deps:["lib/dom_react.cma";"%.byte"]
       ~prod:"%.js"
       begin fun env build ->
         let dst = Filename.dirname (Unix.getcwd () / env "%.js") in
@@ -30,7 +30,7 @@ dispatch begin function
              Cmd (S[A"cp"; Px src; Px dst])]
       end;
     flag ["ocaml"; "byte"; "compile"] (S[A"-I"; P"lib"]);
-    flag ["ocaml"; "byte"; "link"] (S[P("lib/dom_react.cmo")]);
-
+    flag ["ocaml"; "byte"; "link"; "use_dom_react"] (S[P("lib/dom_react.cma")]);
+    dep ["ocaml"; "byte"; "link"; "use_dom_react"] ["lib/dom_react.cma"]
   | _ -> ()
 end;;
