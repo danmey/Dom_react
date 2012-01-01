@@ -6,6 +6,9 @@ setup.*
 *.cm*
 *.js
 *.annot
+*.tar*
 AUTHORS.txt
 INSTALL.txt
 README.txt
+Makefile
+configure
