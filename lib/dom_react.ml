@@ -91,8 +91,15 @@ module E = struct
       
   let key_handler send =
     (fun ev ->
-      send (ev ## keyCode);
+      send ev ## charCode;
       Js._false)
+
+  let char_handler send =
+    (fun ev ->
+      match Js.Optdef.to_option ev ## charCode with
+        | None -> Js._true
+        | Some 0 -> Js._true
+        | Some char_code -> send char_code; Js._false)
       
   let mouse_move_handler send =
     let lastx, lasty = ref 0, ref 0 in
@@ -113,6 +120,8 @@ module E = struct
   let onkeydown = Fun_prop.set_onkeydown, key_handler
   let onkeyup = Fun_prop.set_onkeyup, key_handler
   let onload = Fun_prop.set_onload, (fun send ev -> send ())
+
+  let onchar = Fun_prop.set_onkeypress, char_handler
     
   let create w event =
     let set_meth, handler = event in
