@@ -7,7 +7,7 @@ dist_files="Makefile    \
             README.txt  \
             AUTHORS.txt"
 
-base_files=`git ls-files`
+base_files=`git ls-files | grep -v .gitignore`
 name=`sed -n "s/Name:[ \t]*//p" _oasis`
 version=`sed -n "s/Version:[ \t]*//p" _oasis`
 canonical_name="$name-$version"
