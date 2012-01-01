@@ -26,7 +26,7 @@ Library dom_react
   Path:         lib
   BuildTools:   ocamlbuild
   BuildDepends: js_of_ocaml, react
-  Modules:      Dom_react, Input
+  Modules:      Dom_react
 
 SourceRepository master
   Type:     git

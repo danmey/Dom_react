@@ -34,5 +34,5 @@ let onload () =
 ;;
 
 let () =
-  let e = Dom_react.E.create Dom_html.window Dom_react.E.onload in
-  ignore(E.map onload e)
+  let e = Base.E.create Dom_html.window Base.E.onload in
+  ignore(Base.E.map onload e)

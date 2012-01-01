@@ -16,7 +16,7 @@
   ----------------------------------------------------------------------------*)
 
 
-open Dom_react
+open Dom_react.Base
 
 let js = Js.string
 
@@ -85,5 +85,5 @@ let onload () =
 ;;
 
 let () =
-  let e = Dom_react.E.create Dom_html.window Dom_react.E.onload in
+  let e = E.create Dom_html.window E.onload in
   ignore(E.map onload e)

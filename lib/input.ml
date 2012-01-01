@@ -1,4 +1,4 @@
-module E = Dom_react.E
+module E = Base.E
 module H = Dom_html
 
 module Value = struct

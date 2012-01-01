@@ -1,4 +1,5 @@
 #-*-conf-*-
 <**/*.ml>: syntax(camlp4o), package(js_of_ocaml.syntax), package(react)
 <**/*.byte>: package(react), package(js_of_ocaml)
+<lib/*.cmo>: for-pack(Dom_react)
 <examples/**/*.*>: use_dom_react

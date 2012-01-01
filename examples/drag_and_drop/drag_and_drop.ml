@@ -16,7 +16,7 @@
   ----------------------------------------------------------------------------*)
 
 
-open Dom_react
+open Dom_react.Base
 let js = Js.string
 
 module WideningWidget = struct
