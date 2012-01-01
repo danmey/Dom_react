@@ -1,6 +1,6 @@
 open Ocamlbuild_plugin;;
 
-let run_and_read = Ocamlbuild_pack.My_unix.run_and_read
+let run_and_read = Ocamlbuild_pack.My_unix.run_and_read;;
 
 let ocamlfind_query pkg =
    let cmd = Printf.sprintf "ocamlfind query %s" (Filename.quote pkg) in
@@ -31,9 +31,6 @@ dispatch begin function
       end;
     flag ["ocaml"; "byte"; "compile"] (S[A"-I"; P"lib"]);
     flag ["ocaml"; "byte"; "link"] (S[P("lib/dom_react.cmo")]);
-    
-  | Before_options ->
-    Options.use_ocamlfind := true;
 
   | _ -> ()
-end
+end;;
