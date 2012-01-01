@@ -34,7 +34,6 @@ dispatch begin function
     
   | Before_options ->
     Options.use_ocamlfind := true;
-    Options.targets := ["examples.otarget"]
 
   | _ -> ()
 end

@@ -2,15 +2,20 @@
 OASISFormat: 0.2
 Name:        dom_react
 Version:     0.1.0
+
 Synopsis:    
  Reactive programming in a browser through js_of_ocaml and React
+
 Description: 
  The library provides higher-level reactive constructs for building
  Functional Reactive applications in a browser using React library,
  js_of_ocaml and coresponding JS and Dom bindings.
-Authors:     Wojciech Meyer
-License:     LGPL
-Plugins:     META (0.2), StdFiles (0.2)
+
+Authors:      Wojciech Meyer
+License:      LGPL
+Plugins:      META (0.2), StdFiles (0.2), DevFiles (0.2)
+BuildType:    Custom (0.2)
+XCustomBuild: ocamlbuild examples.otarget
 
 Library dom_react
   Path:         lib
