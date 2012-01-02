@@ -2,46 +2,47 @@ module S = Base.S
 module E = Base.E
 module H = Dom_html
 
+  (* Due to limitation of type inference we need to wrap conversion
+     functions to a first class module *)
+module type CONVERSION = sig
+  type t
+  val default : string
+  val string_of : t -> string
+  val of_string : string -> t
+end
+
+exception WrongFormat
+  
+module IntConversion = struct
+  type t = int
+  let default = "0"
+  let string_of = string_of_int
+  let of_string = int_of_string
+end
+
+module FloatConversion = struct
+  type t = float
+  let default = "0."
+
+  let string_of f =
+    let s = string_of_float f in 
+    if s = "nan" then 
+      raise WrongFormat 
+    else s
+
+  let of_string s = 
+    try float_of_string s 
+    with _ -> float (int_of_string s)
+end
+  
+module StringConversion = struct
+  type t = string
+  let default = ""
+  let string_of s = s
+  let of_string s = s
+end
+
 module Create = struct
-  exception WrongFormat
-
-    (* Due ot limitation of type inference ( we need to wrap conversion
-       functions to a first class module *)
-  module type CONVERSION = sig
-    type t
-    val default : string
-    val string_of : t -> string
-    val of_string : string -> t
-  end
-    
-  module IntConversion = struct
-    type t = int
-    let default = "0"
-    let string_of = string_of_int
-    let of_string = int_of_string
-  end
-
-  module FloatConversion = struct
-    type t = float
-    let default = "0."
-
-    let string_of f =
-      let s = string_of_float f in 
-      if s = "nan" then 
-        raise WrongFormat 
-      else s
-
-    let of_string s = 
-      try float_of_string s 
-      with _ -> float (int_of_string s)
-  end
-    
-  module StringConversion = struct
-    type t = string
-    let default = ""
-    let string_of s = s
-    let of_string s = s
-  end
 
   let numerical (type t) conversion value =
     let module C = (val conversion : CONVERSION with type t = t) in
@@ -109,9 +110,14 @@ module Create = struct
 end
   
 module Map = struct
-  let int s =
+  let numerical (type t) conversion s =
+    let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string "text") Dom_html.document in
-    w, S.map (fun n -> (Base.Fun_prop.set_value w (string_of_int n))) s 
+    w, S.map (fun n -> (Base.Fun_prop.set_value w (C.string_of n))) s 
+
+  let int = numerical (module IntConversion : CONVERSION with type t = int)
+  let float = numerical (module FloatConversion : CONVERSION with type t = float)
+  let string = numerical (module StringConversion : CONVERSION with type t = string)
 end
 
 
