@@ -11,7 +11,7 @@ module type CONVERSION = sig
   val of_string : string -> t
 end
 
-exception WrongFormat
+exception Wrong_format
   
 module IntConversion = struct
   type t = int
@@ -27,7 +27,7 @@ module FloatConversion = struct
   let string_of f =
     let s = string_of_float f in 
     if s = "nan" then 
-      raise WrongFormat 
+      raise Wrong_format 
     else s
 
   let of_string s = 
@@ -44,7 +44,7 @@ end
 
 module Create = struct
 
-  let numerical (type t) conversion value =
+  let custom (type t) conversion value =
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string "text") Dom_html.document in
     w ## value <- Js.string (C.string_of value);
@@ -93,14 +93,14 @@ module Create = struct
                 input'
               end
               else input
-        with _ -> input
+        with Wrong_format -> input
       ) e 
     in
     w, S.map (fun value -> try C.of_string value with _ -> C.of_string C.default) validate
       
-  let int = numerical (module IntConversion : CONVERSION with type t = int)
-  let float = numerical (module FloatConversion : CONVERSION with type t = float)
-  let string = numerical (module StringConversion : CONVERSION with type t = string)
+  let int = custom (module IntConversion : CONVERSION with type t = int)
+  let float = custom (module FloatConversion : CONVERSION with type t = float)
+  let string = custom (module StringConversion : CONVERSION with type t = string)
 
   let button name =
     let w = Dom_html.createButton Dom_html.document in
@@ -110,14 +110,14 @@ module Create = struct
 end
   
 module Map = struct
-  let numerical (type t) conversion s =
+  let custom (type t) conversion s =
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string "text") Dom_html.document in
     w, S.map (fun n -> (Base.Fun_prop.set_value w (C.string_of n))) s 
 
-  let int = numerical (module IntConversion : CONVERSION with type t = int)
-  let float = numerical (module FloatConversion : CONVERSION with type t = float)
-  let string = numerical (module StringConversion : CONVERSION with type t = string)
+  let int = custom (module IntConversion : CONVERSION with type t = int)
+  let float = custom (module FloatConversion : CONVERSION with type t = float)
+  let string = custom (module StringConversion : CONVERSION with type t = string)
 end
 
 
