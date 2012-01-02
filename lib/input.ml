@@ -1,4 +1,4 @@
-module E = Base.E
+module S = Base.S
 module H = Dom_html
 
 module Value = struct
@@ -47,8 +47,8 @@ module Value = struct
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string "text") Dom_html.document in
     w ## value <- Js.string (C.string_of value);
-    let e = E.create w E.onchar in
-    let validate = E.map
+    let e = S.create w S.onchar in
+    let validate = S.map
       (fun char_code ->
             let input = Js.to_string w ## value in
             try
@@ -74,7 +74,7 @@ module Value = struct
           with _ -> input
       ) e 
     in
-    w, E.map (fun value -> try C.of_string value with _ -> C.of_string C.default) validate
+    w, S.map (fun value -> try C.of_string value with _ -> C.of_string C.default) validate
       
   let int = numerical (module IntConversion : CONVERSION with type t = int)
   let float = numerical (module FloatConversion : CONVERSION with type t = float)
