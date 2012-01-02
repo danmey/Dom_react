@@ -97,8 +97,11 @@ module MakePrim(C : sig type 'a t val create : 'a -> ('a t * ('a -> unit)) end) 
   let char_handler send =
     (fun ev ->
       match Js.Optdef.to_option ev ## charCode with
-        | None -> Js._true
-        | Some 0 -> Js._true
+        | None 
+        | Some 0 -> 
+          begin match ev ## keyCode with
+            | 8 | 46 as a -> send a; Js._false
+            | _ -> Js._true end
         | Some char_code -> send char_code; Js._false)
       
   let mouse_move_handler send =
