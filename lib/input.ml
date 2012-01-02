@@ -1,12 +1,12 @@
 module S = Base.S
+module E = Base.E
 module H = Dom_html
 
-module Value = struct
- 
-  (* Due ot limitation of type inference ( we need to wrap conversion
-  functions to a first class module *)
-
+module Create = struct
   exception WrongFormat
+
+    (* Due ot limitation of type inference ( we need to wrap conversion
+       functions to a first class module *)
   module type CONVERSION = sig
     type t
     val default : string
@@ -35,7 +35,7 @@ module Value = struct
       try float_of_string s 
       with _ -> float (int_of_string s)
   end
-      
+    
   module StringConversion = struct
     type t = string
     let default = ""
@@ -50,10 +50,31 @@ module Value = struct
     let e = S.create w S.onchar in
     let validate = S.map
       (fun char_code ->
-            let input = Js.to_string w ## value in
-            try
-              let selectionStart = w ## selectionStart in
-              let selectionEnd = w ## selectionEnd in
+        let input = Js.to_string w ## value in
+        try
+          let selectionStart = w ## selectionStart in
+          let handle_del incr =
+            let left_i, right_i = incr selectionStart in
+            let input, selectionStart =
+              let left,right =
+                if input = "" then
+                  "","" else
+                  String.sub input 0 left_i,
+                  String.sub input right_i 
+                    (String.length input - right_i) 
+              in
+              let input = left ^ right in
+              input, selectionStart
+            in
+            w ## value <- Js.string input;
+            w ## selectionStart <- left_i;
+            w ## selectionEnd <- left_i;
+            input
+          in
+          match char_code with
+            | 46 -> handle_del (fun n -> n,n+1)
+            | 8 -> handle_del (fun n -> n - 1, n)
+            | char_code ->
               let left,right =
                 if input = "" then
                   "","" else
@@ -71,7 +92,7 @@ module Value = struct
                 input'
               end
               else input
-          with _ -> input
+        with _ -> input
       ) e 
     in
     w, S.map (fun value -> try C.of_string value with _ -> C.of_string C.default) validate
@@ -79,5 +100,19 @@ module Value = struct
   let int = numerical (module IntConversion : CONVERSION with type t = int)
   let float = numerical (module FloatConversion : CONVERSION with type t = float)
   let string = numerical (module StringConversion : CONVERSION with type t = string)
-  (* let float value = numerical float_of_int int_of_float value *)
+
+  let button name =
+    let w = Dom_html.createButton Dom_html.document in
+    let e = E.create w E.onclick in
+    w ## innerHTML <- Js.string name;
+    w, e
 end
+  
+module Map = struct
+  let int s =
+    let w = H.createInput ~_type:(Js.string "text") Dom_html.document in
+    w, S.map (fun n -> (Base.Fun_prop.set_value w (string_of_int n))) s 
+end
+
+
+
