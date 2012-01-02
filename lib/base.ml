@@ -78,7 +78,7 @@ module Fun_prop = struct
     end
 end
 
-module E = struct
+module MakePrim(C : sig type 'a t val create : 'a -> ('a t * ('a -> unit)) end) = struct
   include React.E
   let mouse_click_handler send =
     let clicks = ref 0 in
@@ -131,6 +131,9 @@ module E = struct
 
 end
 
+module E = MakePrim(struct type 'a t = 'a React.E.t let create _ = React.E.create () end)
+module S = MakePrim(struct type 'a t = 'a React.S.t let create v = React.S.create v end)
+
 module Time = struct
   let updater ms f =
     let ms' = float ms in
@@ -145,17 +148,17 @@ module Time = struct
 
 end
 
-module S = struct
+module OldS = struct
   include React.S
     
   let create w prop updater =
-    let signal, send = S.create (prop w) in
+    let signal, send = React.S.create (prop w) in
     updater (fun () -> send (prop w));
     signal
 
   let time ?(accuracy=0.01) ?(start=0.) () =
     let time = ref start in
-    let signal, send = S.create !time in
+    let signal, send = React.S.create !time in
     Time.updater (int_of_float (accuracy *. 1000.)) (fun () ->
       time := !time +. accuracy;
       send !time);
