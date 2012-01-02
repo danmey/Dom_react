@@ -18,7 +18,7 @@
 
 open Dom_react.Base
 let js = Js.string
-
+module S = OldS
 module WideningWidget = struct
   let element ~name ~parent =
     let element = Dom_html.createDiv Dom_html.document in
