@@ -25,14 +25,20 @@ let onload () =
   let return = Js.Opt.return in
   let _ = Dom_html.document##getElementById (js"body") >>=
     (fun body ->
-      let input1,_ = Input.Create.float 123. in
-      let input2,i = Input.Create.int 42 in
-      let input3,_ = Input.Create.string "foo bar" in
-      let input4,_ = Input.Map.int i in
-      Dom.appendChild body input1;
-      Dom.appendChild body input2;
-      Dom.appendChild body input3;
-      Dom.appendChild body input4;
+      let w1,c1 = Input.Create.float 123. in
+      let w2,c2 = Input.Create.int 42 in
+      let w3,c3 = Input.Create.string "foo bar" in
+      let p = Dom_html.createP Dom_html.document in
+      let w4,m1 = Input.Map.float c1 in
+      let w5,m1 = Input.Map.int c2 in
+      let w6,m1 = Input.Map.string c3 in
+      Dom.appendChild body w1;
+      Dom.appendChild body w2;
+      Dom.appendChild body w3;
+      Dom.appendChild body p;
+      Dom.appendChild body w4;
+      Dom.appendChild body w5;
+      Dom.appendChild body w6;
       return ()) in
   ()
 ;;
