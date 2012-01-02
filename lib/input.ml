@@ -36,6 +36,13 @@ module Value = struct
       with _ -> float (int_of_string s)
   end
       
+  module StringConversion = struct
+    type t = string
+    let default = ""
+    let string_of s = s
+    let of_string s = s
+  end
+
   let numerical (type t) conversion value =
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string "text") Dom_html.document in
@@ -71,5 +78,6 @@ module Value = struct
       
   let int = numerical (module IntConversion : CONVERSION with type t = int)
   let float = numerical (module FloatConversion : CONVERSION with type t = float)
+  let string = numerical (module StringConversion : CONVERSION with type t = string)
   (* let float value = numerical float_of_int int_of_float value *)
 end

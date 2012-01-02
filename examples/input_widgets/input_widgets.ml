@@ -25,10 +25,12 @@ let onload () =
   let return = Js.Opt.return in
   let _ = Dom_html.document##getElementById (js"body") >>=
     (fun body ->
-      let input1,_ = Input.Value.int 123 in
+      let input1,_ = Input.Value.float 123. in
       let input2,_ = Input.Value.int 42 in
+      let input3,_ = Input.Value.string "foo bar" in
       Dom.appendChild body input1;
       Dom.appendChild body input2;
+      Dom.appendChild body input3;
       return ()) in
   ()
 ;;
