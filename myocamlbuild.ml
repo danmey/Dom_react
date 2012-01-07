@@ -29,7 +29,7 @@ dispatch begin function
                     js_tweako; Px(env "%.byte")]);
              Cmd (S[A"cp"; Px src; Px dst])]
       end;
-    flag ["ocaml"; "byte"; "compile"] (S[A"-I"; P"lib"]);
+    flag ["ocaml"; "byte"; "compile"] (S[A"-I"; P"lib";A"-annot"]);
     flag ["ocaml"; "byte"; "link"; "use_dom_react"] (S[P("lib/dom_react.cmo")]);
     dep ["ocaml"; "byte"; "link"; "use_dom_react"] ["lib/dom_react.cmo"]
   | _ -> ()
