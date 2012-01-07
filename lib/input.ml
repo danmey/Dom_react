@@ -2,8 +2,8 @@ module S = Base.S
 module E = Base.E
 module H = Dom_html
 
-  (* Due to limitation of type inference we need to wrap conversion
-     functions to a first class module *)
+(* Due to limitation of type inference we need to wrap conversion
+   functions to a first class module *)
 module type CONVERSION = sig
   type t
   type widget
@@ -175,7 +175,7 @@ module Create = struct
     w ## innerHTML <- Js.string name;
     w, e
 end
-  
+
 module Map = struct
   let custom (type t) type_ conversion s =
     let module C = (val conversion : CONVERSION with type t = t) in
