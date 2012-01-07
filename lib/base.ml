@@ -40,6 +40,7 @@ module Fun_prop = struct
     let set_size w v = w ## size <- v
     let set_tabIndex w v = w ## tabIndex <- v
     let set_innerHTML w v = w ## innerHTML <- Js.string v
+    let set_checked w v = w ## checked <- Js.bool v
 
     let set_onclick w v = w ## onclick <- Dom_html.handler v
     let set_ondblclick w v = w ## ondblclick <- Dom_html.handler v
@@ -63,6 +64,7 @@ module Fun_prop = struct
     let size w v = w ## size
     let tabIndex w v = w ## tabIndex
     let innerHTML w v = Js.to_string w ## innerHTML
+    let checked w v = w ## checked
 
     (* Should be really wrapped with variants (mapping css_value -> string) *)
     module Css = struct
