@@ -81,7 +81,7 @@ module Fun_prop = struct
 end
 
 module MakePrim(C : sig type 'a t val create : 'a -> ('a t * ('a -> unit)) end) = struct
-  include React.E
+    
   let mouse_click_handler send =
     let clicks = ref 0 in
     fun ev -> send (!clicks); incr clicks; Js._true
@@ -128,16 +128,28 @@ module MakePrim(C : sig type 'a t val create : 'a -> ('a t * ('a -> unit)) end) 
 
   let onchar = Fun_prop.set_onkeypress, char_handler
     
-  let create w event =
-    let set_meth, handler = event in
-    let event, send = E.create () in
-    let _ = set_meth w (handler send) in
-    event
 
 end
 
-module E = MakePrim(struct type 'a t = 'a React.E.t let create _ = React.E.create () end)
-module S = MakePrim(struct type 'a t = 'a React.S.t let create v = React.S.create v end)
+module E = struct 
+  include React.E
+  include MakePrim(struct type 'a t = 'a React.E.t let create _ = React.E.create () end)
+  let create w event =
+    let set_meth, handler = event in
+    let event, send = create () in
+    let _ = set_meth w (handler send) in
+    event
+end
+
+module S = struct
+  include React.S
+  include MakePrim(struct type 'a t = 'a React.S.t let create v = React.S.create v end)
+  let create w event value =
+    let set_meth, handler = event in
+    let event, send = create value in
+    let _ = set_meth w (handler send) in
+    event
+end
 
 module Time = struct
   let updater ms f =

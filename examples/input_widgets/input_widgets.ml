@@ -29,6 +29,7 @@ let onload () =
       let w2,c2 = Input.Create.int 42 in
       let w3,c3 = Input.Create.string "foo bar" in
       let w4,c4 = Input.Create.bool true in
+      let c1 = React.S.Float.(c1 *. React.S.const 1.3) in
       let p = Dom_html.createP Dom_html.document in
       let w5,m1 = Input.Map.float c1 in
       let w6,m2 = Input.Map.int c2 in

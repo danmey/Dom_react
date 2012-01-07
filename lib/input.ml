@@ -13,6 +13,7 @@ module type CONVERSION = sig
   val get : widget -> t
   val string_of : t -> string
   val of_string : string -> t
+  val creator : widget -> int React.event
 end
 
 exception Wrong_format
@@ -28,6 +29,7 @@ module ValueControl(T : sig
   let set_string w str = w ## value <- Js.string str
   let set w v = set_string w (T.string_of v)
   let get w = T.of_string (Js.to_string (w ## value))
+  let creator w = E.create w E.onchar
 end
 
 module IntConversion = struct
@@ -84,15 +86,16 @@ end
 
 module Create = struct
 
-  let custom (type t) type_ creator conversion value =
+  let custom (type t) type_ conversion value =
     let module C = (val conversion : CONVERSION 
                     with 
                       type t = t 
                     and type widget = H.inputElement Js.t) in
     let w = H.createInput ~_type:(Js.string type_) Dom_html.document in
     (* C.set w (Js.string (C.string_of value)); *)
-    let e = creator w in
-    let validate = S.map
+    let e = C.creator w in
+    C.set w value;
+    let validate = E.map
       (fun char_code ->
         let input = C.get w in
         let input = C.string_of input in
@@ -138,33 +141,37 @@ module Create = struct
         with _ -> input
       ) e 
     in
-    w, S.map (fun value -> try C.of_string value with _ -> C.of_string C.default) validate
+    w, S.hold 
+      (C.of_string C.default)
+      (E.map
+      (fun value -> 
+        try 
+          C.of_string value 
+        with _ -> C.of_string C.default) validate)
 
   let bool name =
     let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
-    let on_click = S.create w S.onclick in
+    let on_click = S.create w S.onclick 0 in
     w, S.map (Base.Fun_prop.checked w) on_click
 
-  let on_char w = S.create w S.onchar
-
-  let int v = custom "text" on_char
+  let int v = custom "text"
     (module IntConversion : CONVERSION 
       with type t = int 
       and type widget = H.inputElement Js.t) v
 
-  let float v = custom "text" on_char
+  let float v = custom "text"
     (module FloatConversion : CONVERSION 
       with type t = float 
       and type widget = H.inputElement Js.t) v
 
-  let string v = custom "text" on_char
+  let string v = custom "text"
     (module StringConversion : CONVERSION 
       with type t = string 
       and type widget = H.inputElement Js.t) v
 
   let button name =
     let w = Dom_html.createButton Dom_html.document in
-    let e = E.create w E.onclick in
+    let e = S.create w S.onclick in
     w ## innerHTML <- Js.string name;
     w, e
 end
