@@ -64,7 +64,7 @@ module Fun_prop = struct
     let size w v = w ## size
     let tabIndex w v = w ## tabIndex
     let innerHTML w v = Js.to_string w ## innerHTML
-    let checked w v = w ## checked
+    let checked w _ = Js.to_bool w ## checked
 
     (* Should be really wrapped with variants (mapping css_value -> string) *)
     module Css = struct
@@ -84,7 +84,7 @@ module MakePrim(C : sig type 'a t val create : 'a -> ('a t * ('a -> unit)) end) 
   include React.E
   let mouse_click_handler send =
     let clicks = ref 0 in
-    fun ev -> send (!clicks); incr clicks; Js._false
+    fun ev -> send (!clicks); incr clicks; Js._true
         
   let mouse_handler send =
     (fun ev -> 

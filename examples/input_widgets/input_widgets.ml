@@ -28,17 +28,21 @@ let onload () =
       let w1,c1 = Input.Create.float 123. in
       let w2,c2 = Input.Create.int 42 in
       let w3,c3 = Input.Create.string "foo bar" in
+      let w4,c4 = Input.Create.bool true in
       let p = Dom_html.createP Dom_html.document in
       let w5,m1 = Input.Map.float c1 in
       let w6,m2 = Input.Map.int c2 in
       let w7,m3 = Input.Map.string c3 in
+      let w8,m4 = Input.Map.bool c4 in
       Dom.appendChild body w1;
       Dom.appendChild body w2;
       Dom.appendChild body w3;
+      Dom.appendChild body w4;
       Dom.appendChild body p;
       Dom.appendChild body w5;
       Dom.appendChild body w6;
       Dom.appendChild body w7;
+      Dom.appendChild body w8;
       return ()) in
   ()
 ;;

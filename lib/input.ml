@@ -69,30 +69,29 @@ module StringConversion = struct
 end
 
 module BoolConversion = struct
-  module C = struct
-    type t = bool
-    let get w = w ## checked
-    let set w = w ## checked
-    let default = "off"
-    let string_of s = if s then "on" else "off"
-    let of_string = function
-      | "on" -> true
-      | "off" -> false
-      | _ -> raise Wrong_format
-  end
-  include ValueControl(struct type widget = H.inputElement Js.t include C end)
+  type t = bool
+  type widget = H.inputElement Js.t
+  let default = "off"
+  let string_of s = if s then "on" else "off"
+  let of_string = function
+    | "on" -> true
+    | "off" -> false
+    | _ -> raise Wrong_format
+  let set_string w str = w ## value <- Js.string str
+  let set w v = set_string w (string_of v)
+  let get w = of_string (Js.to_string (w ## value))
 end
 
 module Create = struct
 
-  let custom (type t) type_ conversion value =
+  let custom (type t) type_ creator conversion value =
     let module C = (val conversion : CONVERSION 
                     with 
                       type t = t 
                     and type widget = H.inputElement Js.t) in
     let w = H.createInput ~_type:(Js.string type_) Dom_html.document in
     (* C.set w (Js.string (C.string_of value)); *)
-    let e = S.create w S.onchar in
+    let e = creator w in
     let validate = S.map
       (fun char_code ->
         let input = C.get w in
@@ -140,10 +139,28 @@ module Create = struct
       ) e 
     in
     w, S.map (fun value -> try C.of_string value with _ -> C.of_string C.default) validate
-      
-  let int v = custom "text" (module IntConversion : CONVERSION with type t = int and type widget = H.inputElement Js.t) v
-  let float v = custom "text" (module FloatConversion : CONVERSION with type t = float and type widget = H.inputElement Js.t) v
-  let string v = custom "text" (module StringConversion : CONVERSION with type t = string and type widget = H.inputElement Js.t) v
+
+  let bool name =
+    let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
+    let on_click = S.create w S.onclick in
+    w, S.map (Base.Fun_prop.checked w) on_click
+
+  let on_char w = S.create w S.onchar
+
+  let int v = custom "text" on_char
+    (module IntConversion : CONVERSION 
+      with type t = int 
+      and type widget = H.inputElement Js.t) v
+
+  let float v = custom "text" on_char
+    (module FloatConversion : CONVERSION 
+      with type t = float 
+      and type widget = H.inputElement Js.t) v
+
+  let string v = custom "text" on_char
+    (module StringConversion : CONVERSION 
+      with type t = string 
+      and type widget = H.inputElement Js.t) v
 
   let button name =
     let w = Dom_html.createButton Dom_html.document in
@@ -161,5 +178,7 @@ module Map = struct
   let int = custom "text" (module IntConversion : CONVERSION with type t = int)
   let float = custom "text" (module FloatConversion : CONVERSION with type t = float)
   let string = custom "text" (module StringConversion : CONVERSION with type t = string)
-  let bool = custom "checkbox" (module BoolConversion : CONVERSION with type t = bool)
+  let bool s =
+    let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
+    w, S.map (Base.Fun_prop.set_checked w) s
 end
