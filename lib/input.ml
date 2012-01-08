@@ -84,87 +84,89 @@ module BoolConversion = struct
   let get w = of_string (Js.to_string (w ## value))
 end
 
+let text (type t) conversion value widget =
+  let module C = (val conversion : CONVERSION 
+                  with 
+                    type t = t 
+                  and type widget = H.inputElement Js.t)in
+  let e = C.creator widget in
+  C.set widget value;
+  let validate = E.map
+    (fun char_code ->
+      let input = C.get widget in
+      let input = C.string_of input in
+      try
+        let selectionStart = widget ## selectionStart in
+        let handle_del incr =
+          let left_i, right_i = incr selectionStart in
+          let input, selectionStart =
+            let left,right =
+              String.sub input 0 left_i,
+              String.sub input right_i 
+                (String.length input - right_i) 
+            in
+            let input = left ^ right in
+            input, selectionStart
+          in
+          C.set_string widget input;
+          widget ## selectionStart <- left_i;
+          widget ## selectionEnd <- left_i;
+          input
+        in
+        match char_code with
+          | 46 -> handle_del (fun n -> n,n+1)
+          | 8 -> handle_del (fun n -> n - 1, n)
+          | char_code ->
+            let left,right =
+              if input = "" then
+                "","" else
+                String.sub input 0 selectionStart, 
+                String.sub input selectionStart 
+                  (String.length input - selectionStart) 
+            in
+            let input' = Printf.sprintf "%s%c%s" left (Char.chr char_code) right in
+            let input' = C.string_of (C.of_string input') in
+            let input'' = C.string_of (C.of_string input') in
+            if input' = input'' then begin
+              C.set_string widget input';
+              widget ## selectionStart <- selectionStart+1;
+              widget ## selectionEnd <- selectionStart+1;
+              input'
+            end
+            else input
+      with _ -> input
+    ) e 
+  in
+  S.hold 
+    (C.of_string C.default)
+    (E.map
+       (fun value -> 
+         try 
+           C.of_string value 
+         with _ -> C.of_string C.default) validate)
+
 module Create = struct
 
-  let custom (type t) type_ conversion value =
-    let module C = (val conversion : CONVERSION 
-                    with 
-                      type t = t 
-                    and type widget = H.inputElement Js.t) in
-    let w = H.createInput ~_type:(Js.string type_) Dom_html.document in
-    (* C.set w (Js.string (C.string_of value)); *)
-    let e = C.creator w in
-    C.set w value;
-    let validate = E.map
-      (fun char_code ->
-        let input = C.get w in
-        let input = C.string_of input in
-        try
-          let selectionStart = w ## selectionStart in
-          let handle_del incr =
-            let left_i, right_i = incr selectionStart in
-            let input, selectionStart =
-              let left,right =
-                String.sub input 0 left_i,
-                String.sub input right_i 
-                  (String.length input - right_i) 
-              in
-              let input = left ^ right in
-              input, selectionStart
-            in
-            C.set_string w input;
-            w ## selectionStart <- left_i;
-            w ## selectionEnd <- left_i;
-            input
-          in
-          match char_code with
-            | 46 -> handle_del (fun n -> n,n+1)
-            | 8 -> handle_del (fun n -> n - 1, n)
-            | char_code ->
-              let left,right =
-                if input = "" then
-                  "","" else
-                  String.sub input 0 selectionStart, 
-                  String.sub input selectionStart 
-                    (String.length input - selectionStart) 
-              in
-              let input' = Printf.sprintf "%s%c%s" left (Char.chr char_code) right in
-              let input' = C.string_of (C.of_string input') in
-              let input'' = C.string_of (C.of_string input') in
-              if input' = input'' then begin
-                C.set_string w input';
-                w ## selectionStart <- selectionStart+1;
-                w ## selectionEnd <- selectionStart+1;
-                input'
-              end
-              else input
-        with _ -> input
-      ) e 
-    in
-    w, S.hold 
-      (C.of_string C.default)
-      (E.map
-      (fun value -> 
-        try 
-          C.of_string value 
-        with _ -> C.of_string C.default) validate)
+  let text _type conv value =
+    let widget = H.createInput ~_type:(Js.string _type) Dom_html.document in
+    widget, text conv value widget 
 
   let bool name =
     let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
     let on_click = S.create w S.onclick 0 in
     w, S.map (Base.Fun_prop.checked w) on_click
 
-  let int v = custom "text"
+  let int v = text "text"
     (module IntConversion : CONVERSION 
       with type t = int 
       and type widget = H.inputElement Js.t) v
 
-  let float v = custom "text"
+  let float v = text "text"
     (module FloatConversion : CONVERSION 
       with type t = float 
       and type widget = H.inputElement Js.t) v
 
-  let string v = custom "text"
+  let string v = text "text"
     (module StringConversion : CONVERSION 
       with type t = string 
       and type widget = H.inputElement Js.t) v
@@ -176,15 +178,27 @@ module Create = struct
     w, e
 end
 
+module Attach = struct
+end
+
 module Map = struct
   let custom (type t) type_ conversion s =
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string type_) Dom_html.document in
     w, S.map (fun n -> (Base.Fun_prop.set_value w (C.string_of n))) s 
 
-  let int = custom "text" (module IntConversion : CONVERSION with type t = int)
-  let float = custom "text" (module FloatConversion : CONVERSION with type t = float)
-  let string = custom "text" (module StringConversion : CONVERSION with type t = string)
+  let int = custom "text" 
+    (module IntConversion : CONVERSION 
+      with type t = int)
+
+  let float = custom "text" 
+    (module FloatConversion : CONVERSION 
+      with type t = float)
+
+  let string = custom "text" 
+    (module StringConversion : CONVERSION 
+      with type t = string)
+
   let bool s =
     let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
     w, S.map (Base.Fun_prop.set_checked w) s
