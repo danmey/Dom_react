@@ -29,15 +29,19 @@ let onload () =
       let w2,c2 = Input.Create.int 42 in
       let w3,c3 = Input.Create.string "foo bar" in
       let w4,c4 = Input.Create.bool true in
+
       let c1 = React.S.Float.(c1 /. React.S.const 1.3) in
       let c2 = React.S.Int.(c2 * React.S.const 2) in
       let c3 = React.S.map String.uppercase c3 in
       let c4 = React.S.map not c4 in
-      let p = Dom_html.createP Dom_html.document in
+
       let w5,m1 = Input.Map.float c1 in
       let w6,m2 = Input.Map.int c2 in
       let w7,m3 = Input.Map.string c3 in
       let w8,m4 = Input.Map.bool c4 in
+
+      let p = Dom_html.createP Dom_html.document in
+
       Dom.appendChild body w1;
       Dom.appendChild body w2;
       Dom.appendChild body w3;
@@ -47,6 +51,7 @@ let onload () =
       Dom.appendChild body w6;
       Dom.appendChild body w7;
       Dom.appendChild body w8;
+
       return ()) in
   ()
 ;;
