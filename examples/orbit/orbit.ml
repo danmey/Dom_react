@@ -17,41 +17,36 @@ let onload _ =
       (Dom_html.document ## getElementById (Js.string "canvas")) >>=
         (fun canvas ->
           let canvas = ((Js.Unsafe.coerce canvas) : Dom_html.canvasElement Js.t) in
-          let ctx = canvas  ##getContext (Dom_html._2d_) in
-          let w1, balls = Input.Create.int 5 in
-          let w2, red = Input.Create.int 1 in
-          let w3, blue = Input.Create.int 2 in
-          let w4, radius = Input.Create.float 0.5 in
-          let w5, speed = Input.Create.float 0.6 in
+          let ctx = canvas ## getContext (Dom_html._2d_) in
+          let _, balls = Input.Named.int 5 "balls" in
+          let _, red = Input.Named.int 1 "red" in
+          let _, green = Input.Named.int 1 "green" in
+          let _, blue = Input.Named.int 2 "blue"in
+          let _, radius = Input.Named.float 0.5 "radius" in
+          let _, speed = Input.Named.float 0.6 "speed" in
 
-          Dom.appendChild body w1;
-          Dom.appendChild body w2;
-          Dom.appendChild body w3;
-          Dom.appendChild body w4;
+          let ticks = Dom_react.Base.OldS.time () in
+          let phase =
+            S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed in
 
-          (* let ticks = Dom_react.Base.OldS.time () in *)
-
-          (* let phase = *)
-          (*   S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed in *)
-
-          (* let shapes = *)
-          (*   S.l5 (fun balls radius red blue phase -> *)
-          (*     let left, top = 0, 0 in *)
-          (*     ctx ## clearRect (0., 0.,  *)
-          (*                       float_of_int (canvas ## clientWidth),  *)
-          (*                       float_of_int (canvas ## clientHeight)); *)
-          (*     let _ = build_list balls *)
-          (*       (fun i -> *)
-          (*         let t = 2. *. 3.1415 *. float_of_int i /. float_of_int balls +. phase in *)
-          (*         let left, top = float_of_int left, float_of_int top in *)
-          (*         let left, top = *)
-          (*           (left +. cos t *. 10.*.radius), *)
-          (*           (top +. sin t *. 10.*.radius) in *)
-          (*         let x0, y0 = Dom_html.elementClientPosition canvas in *)
-          (*         let left, top = left -. 5. -. float_of_int x0, top -. 5. -. float_of_int y0 in *)
-          (*         ctx ## fillRect (left, top, 10., 10.)) in *)
-          (*   ()) balls radius red blue phase  *)
-          (* in *)
+          let shapes =
+            S.l5 (fun balls radius red blue phase ->
+              let left, top = 100, 100 in
+              ctx ## clearRect (0., 0.,
+                                float_of_int (canvas ## clientWidth),
+                                float_of_int (canvas ## clientHeight));
+              let _ = build_list balls
+                (fun i ->
+                  let t = 2. *. 3.1415 *. float_of_int i /. float_of_int balls +. phase in
+                  let left, top = float_of_int left, float_of_int top in
+                  let left, top =
+                    (left +. cos t *. 10.*.radius),
+                    (top +. sin t *. 10.*.radius) in
+                  let x0, y0 = Dom_html.elementClientPosition canvas in
+                  let left, top = left -. 5. -. float_of_int x0, top -. 5. -. float_of_int y0 in
+                  ctx ## fillRect (left, top, 10., 10.)) in
+            ()) balls radius red blue phase
+          in
           Js.Opt.return ())) in
       Js._false
     

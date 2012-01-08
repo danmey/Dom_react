@@ -145,28 +145,19 @@ let text (type t) conversion value widget =
            C.of_string value 
          with _ -> C.of_string C.default) validate)
 
-module Create = struct
+module CreateText = struct
 
-  let text _type conv value =
-    let widget = H.createInput ~_type:(Js.string _type) Dom_html.document in
-    widget, text conv value widget 
-
-  let bool name =
-    let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
-    let on_click = S.create w S.onclick 0 in
-    w, S.map (Base.Fun_prop.checked w) on_click
-
-  let int v = text "text"
+  let int f v = f "text"
     (module IntConversion : CONVERSION 
       with type t = int 
       and type widget = H.inputElement Js.t) v
 
-  let float v = text "text"
+  let float f v = f "text"
     (module FloatConversion : CONVERSION 
       with type t = float 
       and type widget = H.inputElement Js.t) v
 
-  let string v = text "text"
+  let string f v = f "text"
     (module StringConversion : CONVERSION 
       with type t = string 
       and type widget = H.inputElement Js.t) v
@@ -176,9 +167,51 @@ module Create = struct
     let e = S.create w S.onclick in
     w ## innerHTML <- Js.string name;
     w, e
+
+  let bool name =
+    let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
+    let on_click = S.create w S.onclick 0 in
+    w, S.map (Base.Fun_prop.checked w) on_click
+
+end
+
+module Create = struct
+  include CreateText
+  let text _type conv value  =
+    let widget = H.createInput ~_type:(Js.string _type) Dom_html.document in
+    widget, text conv value widget 
+
+  let int = int text
+  let float = float text
+  let string = string text
 end
 
 module Attach = struct
+  include CreateText
+  let text _type conv value widget =
+    text conv value widget 
+
+  let int = int text
+  let float = float text
+  let string = string text
+end
+
+module Named = struct
+  include CreateText
+
+  let failure = (fun () -> Dom_html.window ## alert (Js.string "text"); failwith "text")
+
+  let text _type conv value name =
+    Js.Opt.case (Dom_html.document##getElementById (Js.string name)) failure 
+      (fun widget ->
+        Js.Opt.case (Dom_html.CoerceTo.input widget) failure 
+          (fun widget ->
+            widget, text conv value widget))
+
+  let int = int text
+  let float = float text
+  let string = string text
+
 end
 
 module Map = struct
