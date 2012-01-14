@@ -1,6 +1,6 @@
+examples/flapjax_catchup/catchup.js
 examples/react_breakout/react_breakout.js
 examples/calc/calc.js
-examples/drag_and_drop/drag_and_drop.js
 examples/react_event/react_event.js
 examples/input_widgets/input_widgets.js
 examples/orbit/orbit.js
