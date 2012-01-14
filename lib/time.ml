@@ -22,34 +22,36 @@ let time ?(accuracy=0.01) ?(start=0.) () =
     send !time);
   signal
 
-let delay s =
+let delay s d =
   let accuracy = 10. in
   let time = ref 0. in
-  fun ms ->
-  let pending = Queue.create () in
-  let news, send = React.S.create None in
-  let send _ =
-    time := !time +. 10.;
-    let rec loop () =
-      try
-      (match Queue.peek pending with
-          (t, s) ->
-            if t < !time -. ms then
-              begin
-                let (_,s) = Queue.pop pending in
-                send (Some s);
-                loop ()
-              end)
-      with Queue.Empty -> ()
-    in
+  let f ms =
+    let pending = Queue.create () in
+    let news, send = React.S.create None in
+    let send _ =
+      let ms = React.S.value ms in
+      time := !time +. 10.;
+      let rec loop () =
+        try
+          (match Queue.peek pending with
+              (t, s) ->
+                if t < !time -. ms then
+                  begin
+                    let (_,s) = Queue.pop pending in
+                    send (Some s);
+                    loop ()
+                  end)
+        with Queue.Empty -> ()
+      in
       loop ()
-  in
-  let rec timeout_id = ref (lazy (Dom_html.window ## setTimeout (Js.wrap_callback (loop send), accuracy)))
-  and loop f ev =
-    f ();
-    timeout_id := (lazy Dom_html.window ## setTimeout (Js.wrap_callback (loop send), accuracy));
-    ignore (Lazy.force !timeout_id);
-  in
+    in
+    let rec timeout_id = ref (lazy (Dom_html.window ## setTimeout (Js.wrap_callback (loop send), accuracy)))
+    and loop f ev =
+      f ();
+      timeout_id := (lazy Dom_html.window ## setTimeout (Js.wrap_callback (loop send), accuracy));
+      ignore (Lazy.force !timeout_id);
+    in
     ignore (Lazy.force !timeout_id);
     React.S.l1 (fun x -> Queue.add (!time, x) pending) s;
-    React.S.fmap (fun x -> x) (React.S.value s) news
+    React.S.fmap (fun x -> x) (React.S.value s) news in
+  f d
