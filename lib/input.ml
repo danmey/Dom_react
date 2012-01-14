@@ -171,7 +171,7 @@ module CreateText = struct
   let bool name =
     let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
     let on_click = S.create w S.onclick 0 in
-    w, S.map (Base.Fun_prop.checked w) on_click
+    w, S.map (Properties.Get.checked w) on_click
 
 end
 
@@ -218,7 +218,7 @@ module Value = struct
   let custom (type t) type_ conversion s =
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string type_) Dom_html.document in
-    w, S.map (fun n -> (Base.Fun_prop.set_value w (C.string_of n))) s 
+    w, S.map (fun n -> (Properties.Set.value w (C.string_of n))) s 
 
   let int = custom "text" 
     (module IntConversion : CONVERSION 
@@ -234,5 +234,5 @@ module Value = struct
 
   let bool s =
     let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
-    w, S.map (Base.Fun_prop.set_checked w) s
+    w, S.map (Properties.Set.checked w) s
 end
