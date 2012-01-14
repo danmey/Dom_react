@@ -125,7 +125,7 @@ module Input : sig                              (* Keyboard and time events. *)
   val key : char event                                    (* keyboard event. *)
   val gather : unit -> unit
 end = struct
-  let time = (React.S.changes (Dom_react.Base.OldS.time ()))
+  let time = (React.S.changes (Dom_react.Time.time ()))
   let key, send_key = E.create ()
   let gather () = ()
   let init () =

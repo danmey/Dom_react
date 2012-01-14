@@ -16,7 +16,7 @@
   ----------------------------------------------------------------------------*)
 
 
-open Dom_react.Base
+open Dom_react
 
 let js = Js.string
 
@@ -36,8 +36,8 @@ let onload () =
          Dom.appendChild parent (element :> Dom.node Js.t);
          element ## innerHTML <- js name;
 
-         let ev = E.create element E.onclick in
-         let ev = E.stamp ev value in
+         let ev = Base.E.create element Base.E.onclick in
+         let ev = Base.E.stamp ev value in
 
          event_lst := ev :: !event_lst;
          ev
@@ -76,14 +76,14 @@ let onload () =
          | `Value a -> (b, a) in
 
        let ev =
-         E.fold eval (0,0) (E.select !event_lst)
+         React.E.fold eval (0,0) (React.E.select !event_lst)
        in
-       return (E.map
-         (Fun_prop.set_value result) 
-         (E.map (fun (a,b) -> string_of_int b) ev))) in
+       return (React.E.map
+         (Properties.Set.value result) 
+         (React.E.map (fun (a,b) -> string_of_int b) ev))) in
   ()
 ;;
 
 let () =
-  let e = E.create Dom_html.window E.onload in
-  ignore(E.map onload e)
+  let e = Base.E.create Dom_html.window Base.E.onload in
+  ignore(React.E.map onload e)

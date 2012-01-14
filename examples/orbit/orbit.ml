@@ -25,7 +25,7 @@ let onload _ =
           let _, green = Input.Named.int 0 "green" in
           let _, blue = Input.Named.int 0 "blue"in
 
-          let ticks = Dom_react.Base.OldS.time () in
+          let ticks = Dom_react.Time.time () in
           let phase =
             S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed in
 
