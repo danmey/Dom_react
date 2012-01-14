@@ -114,7 +114,7 @@ module MakePrim(C : sig type 'a t val create : 'a -> ('a t * ('a -> unit)) end) 
       lastx := x; lasty := y;
       send (dx,dy); 
       Js._false
-        
+
   let onclick = Fun_prop.set_onclick, mouse_click_handler
   let ondblclick = Fun_prop.set_ondblclick, mouse_click_handler
   let onmousedown = Fun_prop.set_onmousedown, mouse_handler

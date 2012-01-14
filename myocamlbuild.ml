@@ -31,6 +31,5 @@ dispatch begin function
       end;
     flag ["ocaml"; "byte"; "compile"] (S[A"-I"; P"lib";A"-annot"]);
     flag ["ocaml"; "byte"; "link"; "use_dom_react"] (S[P("lib/dom_react.cmo")]);
-    dep ["ocaml"; "byte"; "link"; "use_dom_react"] ["lib/dom_react.cmo"]
   | _ -> ()
 end;;

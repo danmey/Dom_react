@@ -214,7 +214,7 @@ module Named = struct
 
 end
 
-module Map = struct
+module Value = struct
   let custom (type t) type_ conversion s =
     let module C = (val conversion : CONVERSION with type t = t) in
     let w = H.createInput ~_type:(Js.string type_) Dom_html.document in

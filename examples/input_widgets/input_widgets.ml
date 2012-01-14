@@ -35,10 +35,10 @@ let onload () =
       let c3 = React.S.map String.uppercase c3 in
       let c4 = React.S.map not c4 in
 
-      let w5,m1 = Input.Map.float c1 in
-      let w6,m2 = Input.Map.int c2 in
-      let w7,m3 = Input.Map.string c3 in
-      let w8,m4 = Input.Map.bool c4 in
+      let w5,m1 = Input.Value.float c1 in
+      let w6,m2 = Input.Value.int c2 in
+      let w7,m3 = Input.Value.string c3 in
+      let w8,m4 = Input.Value.bool c4 in
 
       let p = Dom_html.createP Dom_html.document in
 
