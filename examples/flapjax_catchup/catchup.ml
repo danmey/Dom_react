@@ -26,9 +26,24 @@ let onload () =
   let _ = Dom_html.document##getElementById (js"body") >>=
     (fun body ->
       let open Input in
-      let time = Named.int 50 "frameRate" in
-      let delay_time = Named.int 500 "delayRate" in
-      
+      let _, time = Named.int 50 "frameRate" in
+      let _, delay = Named.int 5000 "delayRate" in
+      let delay = React.S.map (fun i -> float i) delay in
+      let mouse = Mouse.mouse () in
+      let delay_mouse = Time.delay mouse delay in
+      let div_el, div = Element.div Base.E.onmouseover in
+      div_el ## setAttribute (js"id", js "themouse");
+      div_el ## style ## color <- js "#FFFFFF";
+      div_el ## style ## backgroundColor <- js "#ff0000";
+      div_el ## style ## position <- js "absolute";
+      div_el ## style ## padding <- js "10px";
+      div_el ## style ## left <- js "0";
+      div_el ## style ## top <- js "0";
+      let set_pos (x,y) =
+        Properties.Css.Set.left div_el x;
+        Properties.Css.Set.top div_el (y+50) in
+      React.S.map set_pos delay_mouse;
+      Dom.appendChild body (div_el :> Dom.node Js.t);
       return ()) in
   ()
 ;;
