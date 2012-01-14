@@ -7,6 +7,7 @@ setup.*
 *.js
 *.annot
 *.tar*
+*.sp[io]t
 AUTHORS.txt
 INSTALL.txt
 README.txt
