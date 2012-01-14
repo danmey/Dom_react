@@ -65,7 +65,7 @@ module Css = struct
     let top w v = w ## style ## top <- Js.string (string_of_int v)
     let width w v = w ## style ## width <- Js.string (string_of_int v)
     let height w v = w ## style ## height <- Js.string (string_of_int v)
-    let left w = int_of_string (Js.to_string w ## style ## left)
+    (* let left w = int_of_string (Js.to_string w ## style ## left) *)
   end
 end
 
