@@ -48,14 +48,18 @@ module FloatConversion = struct
     let default = "0."
 
     let string_of f =
-      let s = string_of_float f in 
-      if s = "nan" then 
-        raise Wrong_format 
-      else s
+      try
+        let s = string_of_float f in 
+        if s = "nan" then 
+          raise Wrong_format 
+        else s
+      with Failure _ -> default
 
     let of_string s = 
       try float_of_string s 
-      with _ -> float (int_of_string s)
+      with Failure _ ->
+        try float (int_of_string s)
+        with Failure _ -> raise Wrong_format
   end
   include ValueControl(struct type widget = H.inputElement Js.t include C end)
 end
@@ -93,9 +97,7 @@ let text (type t) conversion value widget =
   C.set widget value;
   let validate = E.map
     (fun char_code ->
-      let input = C.get widget in
-      let input = C.string_of input in
-      try
+      let input = Js.to_string (widget ## value) in
         let selectionStart = widget ## selectionStart in
         let handle_del incr =
           let left_i, right_i = incr selectionStart in
@@ -114,35 +116,36 @@ let text (type t) conversion value widget =
           input
         in
         match char_code with
-          | 46 -> handle_del (fun n -> n,n+1)
+          | 48 -> handle_del (fun n -> n,n+1)
           | 8 -> handle_del (fun n -> n - 1, n)
-          | char_code ->
-            let left,right =
-              if input = "" then
-                "","" else
-                String.sub input 0 selectionStart, 
-                String.sub input selectionStart 
-                  (String.length input - selectionStart) 
-            in
-            let input' = Printf.sprintf "%s%c%s" left (Char.chr char_code) right in
-            let input' = C.string_of (C.of_string input') in
-            let input'' = C.string_of (C.of_string input') in
-            if input' = input'' then begin
-              C.set_string widget input';
-              widget ## selectionStart <- selectionStart+1;
-              widget ## selectionEnd <- selectionStart+1;
-              input'
-            end
-            else input
-      with _ -> input
+          | _ ->
+              let left,right =
+                try
+                  String.sub input 0 selectionStart, 
+                  String.sub input selectionStart 
+                    (String.length input - selectionStart) 
+                with _ -> "",""
+              in
+              let input' = Printf.sprintf "%s%c%s" left (Char.chr char_code) right in
+              try
+                let input' = C.string_of (C.of_string input') in
+                let input'' = C.string_of (C.of_string input') in
+                if input' = input'' then begin
+                  C.set_string widget input';
+                  widget ## selectionStart <- selectionStart+1;
+                  widget ## selectionEnd <- selectionStart+1;
+                  input'
+                end
+                else input
+              with _ -> input
+              
     ) e 
   in
   S.hold 
     (C.of_string C.default)
     (E.map
        (fun value -> 
-         try 
-           C.of_string value 
+         try C.of_string value 
          with _ -> C.of_string C.default) validate)
 
 module CreateText = struct
