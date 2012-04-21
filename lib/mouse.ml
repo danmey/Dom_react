@@ -10,3 +10,20 @@ let mouse () =
   ignore(addEventListener (document :> eventTarget Js.t) Event.mousemove (handler receive) Js._false);
   signal
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
