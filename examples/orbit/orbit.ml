@@ -1,7 +1,9 @@
 (* Converted from Jake Donham OCamljs Froc example *)
 
 module Input = Dom_react.Input
+module CSS = Dom_react.Properties.Css
 module S = React.S
+module E = React.E
 
 let build_list n f =
   if n < 0 then invalid_arg "n";
@@ -31,6 +33,35 @@ let onload _ =
   let _, blue = Input.Named.int 0 "blue"in
   
   let ticks = Dom_react.Time.time () in
+
+  let widening_time = 500.0 in
+  let widening_speed = 1000.0 in
+
+  let scale f base ticks =
+    let ticks = ticks *. widening_speed -. base in
+    if ticks < 0. then f, 0
+    else
+      f, int_of_float 
+        (if ticks < widening_time
+         then
+            widening_time *. sin (ticks /. widening_time *. 3.1415/.2.)
+         else widening_time) in
+
+  let resize f base ticks =
+    let ticks = scale base ticks in
+    f ticks
+  in
+
+  let set_width w s = w ## width <- s in
+  let set_height w s = w ## height <- s in
+
+  let widening_w = S.changes (S.map (scale set_width 0.) ticks) in
+  let widening_h = S.changes (S.map (scale set_height widening_time) ticks) in
+
+  let widening = E.select [widening_w; widening_h] in
+  
+  E.map (fun (f, s) -> f canvas s) widening;
+
   let phase =
     S.l2 (fun ticks speed -> ticks *. speed *. 0.01) ticks speed 
   in
