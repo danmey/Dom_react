@@ -1,3 +1,4 @@
+open Dom_react.Base
 open Dom_react.Input
 
 let js = Js.string

@@ -99,14 +99,3 @@ module S = struct
     let _ = set_meth w (handler send) in
     event
 end
-
-
-
-
-
-
-
-
-
-
-

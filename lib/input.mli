@@ -1,15 +1,15 @@
 module Create :
 sig
   val button : string -> Dom_html.buttonElement Js.t * int React.signal
-  val bool : string -> Dom_html.inputElement Js.t * bool React.signal
+  val bool : bool -> Dom_html.inputElement Js.t * bool React.signal
   val int : int -> Dom_html.inputElement Js.t * int React.signal
   val float : float -> Dom_html.inputElement Js.t * float React.signal
   val string : string -> Dom_html.inputElement Js.t * string React.signal
-  end
+end
 module Attach :
 sig
   val button : string -> Dom_html.buttonElement Js.t * int React.signal
-  val bool : string -> Dom_html.inputElement Js.t * bool React.signal
+  val bool : bool -> Dom_html.inputElement Js.t * bool React.signal
   val int : int -> Dom_html.inputElement Js.t -> int React.signal
   val float : float -> Dom_html.inputElement Js.t -> float React.signal
   val string : string -> Dom_html.inputElement Js.t -> string React.signal
@@ -17,7 +17,7 @@ end
 module Named :
 sig
   val button : string -> Dom_html.buttonElement Js.t * int React.signal
-  val bool : string -> Dom_html.inputElement Js.t * bool React.signal
+  val bool : bool -> Dom_html.inputElement Js.t * bool React.signal
   val int : int -> string -> Dom_html.inputElement Js.t * int React.signal
   val float : float -> string -> Dom_html.inputElement Js.t * float React.signal
   val string : string -> string -> Dom_html.inputElement Js.t * string React.signal

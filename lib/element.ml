@@ -1,6 +1,25 @@
-let div event =
-  let w = Dom_html.createDiv Dom_html.document in
-  w, Base.E.create w event
+module Create = struct
+  let text : type a. int -> 'a = fun a -> ()
+end
+
+module Attach = struct
+end
+
+module Named = struct
+end
+module Value = struct
+end
+
+
+
+
+
+
+
+
+
+
+
 
 
 

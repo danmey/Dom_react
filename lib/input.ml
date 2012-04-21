@@ -168,10 +168,10 @@ module CreateText = struct
     w ## innerHTML <- Js.string name;
     w, e
 
-  let bool name =
+  let bool init =
     let w = H.createInput ~_type:(Js.string "checkbox") Dom_html.document in
     let on_click = S.create w S.onclick 0 in
-    w ## innerHTML <- Js.string name;
+    Properties.Set.checked w init;
     w, S.map (Properties.Get.checked w) on_click
 
 end
