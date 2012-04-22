@@ -17,43 +17,37 @@
 
 
 open Dom_react
+open React
+
 
 let js = Js.string
+let element id = Js.Opt.get 
+  (Dom_html.document##getElementById (Js.string id))
+  (fun () -> failwith "no element id") 
 
 let onload () =
-  let (>>=) = Js.Opt.bind in
-  let return = Js.Opt.return in
-  let _ = Dom_html.document##getElementById (js"body") >>=
-    (fun body ->
-      let w1,c1 = Input.Create.float 123. in
-      let w2,c2 = Input.Create.int 42 in
-      let w3,c3 = Input.Create.string "foo bar" in
-      let w4,c4 = Input.Create.bool true in
+  let body = element "body" in
+  let w1,c1 = Input.Create.float 123. in
+  let w2,c2 = Input.Create.int 42 in
+  let w3,c3 = Input.Create.string "foo bar" in
+  let w4,c4 = Input.Create.bool true in
 
-      let c1 = React.S.Float.(c1 /. React.S.const 1.3) in
-      let c2 = React.S.Int.(c2 * React.S.const 2) in
-      let c3 = React.S.map String.uppercase c3 in
-      let c4 = React.S.map not c4 in
+  let c1 = S.Float.(c1 /. S.const 1.3) in
+  let c2 = S.Int.(c2 * S.const 2) in
+  let c3 = S.map String.uppercase c3 in
+  let c4 = S.map not c4 in
+  
+  let w5,_ = Input.Value.float c1 in
+  let w6,_ = Input.Value.int c2 in
+  let w7,_ = Input.Value.string c3 in
+  let w8,_ = Input.Value.bool c4 in
 
-      let w5,m1 = Input.Value.float c1 in
-      let w6,m2 = Input.Value.int c2 in
-      let w7,m3 = Input.Value.string c3 in
-      let w8,m4 = Input.Value.bool c4 in
+  let p = Dom_html.createP Dom_html.document in
+  let add lst = List.iter (Dom.appendChild body) lst in
 
-      let p = Dom_html.createP Dom_html.document in
-
-      Dom.appendChild body w1;
-      Dom.appendChild body w2;
-      Dom.appendChild body w3;
-      Dom.appendChild body w4;
-      Dom.appendChild body p;
-      Dom.appendChild body w5;
-      Dom.appendChild body w6;
-      Dom.appendChild body w7;
-      Dom.appendChild body w8;
-
-      return ()) in
-  ()
+  add [w1;w2;w3;w4];
+  add [p];
+  add [w5;w6;w7;w8]
 ;;
 
 let () =
